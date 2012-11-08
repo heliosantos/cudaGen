@@ -10,9 +10,9 @@
 #define MAIN_H
 
 typedef struct Coords3D_s {
-	int x = 1;
-	int y = 1;
-	int z = 1;
+	int x;
+	int y;
+	int z;
 } Coords3D;
 
 int createKernel(char *outputDir, char *kernelName, int geometry);
