@@ -16,6 +16,7 @@
 #include "hashtables.h"
 
 #define MAIN_FILE "main.cu"
+#define TEMPLATE1 "templates/CudaTemplate.cu"
 
 int main(int argc, char **argv)
 {
@@ -41,7 +42,6 @@ int main(int argc, char **argv)
 
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
-
 	
 	//validates grid dim x
 	isValidFlag = 0;
@@ -49,6 +49,7 @@ int main(int argc, char **argv)
 		isValidFlag = args_info.blocks_arg[0] >= 1 && args_info.blocks_arg[0] <= 65535;
 		
 	}
+	
 	if(isValidFlag){
 		blocks.x = args_info.blocks_arg[0];
 		strcpy(blocks.sx, args_info.blocks_orig[0]);
@@ -84,25 +85,48 @@ int main(int argc, char **argv)
 	}
 	numOfBlocks = blocks.x * blocks.y * blocks.z;
 
-	//blocks dim
-	if (args_info.threads_given) {
-		if (args_info.threads_orig[0] != NULL) {
-			threads.x = atoi(args_info.threads_orig[0]);
-			threads.x = threads.x > 0
-			    && threads.x <= 1024 ? threads.x : 1;
-		}
-		if (args_info.threads_orig[1] != NULL) {
-			threads.y = atoi(args_info.threads_orig[1]);
-			threads.y =
-			    threads.y > 0 && threads.y <= 1024 ? threads.y : 1;
-		}
-		if (args_info.threads_orig[2] != NULL) {
-			threads.z = atoi(args_info.threads_orig[2]);
-			threads.z =
-			    threads.z > 0 && threads.z <= 64 ? threads.z : 1;
-		}
+	//validates blocks dim x
+	isValidFlag = 0;
+	if (args_info.threads_given >= 1) {
+		isValidFlag = args_info.threads_arg[0] >= 1 && args_info.threads_arg[0] <= 65535;
+		
+	}
+	
+	if(isValidFlag){
+		threads.x = args_info.threads_arg[0];
+		strcpy(threads.sx, args_info.threads_orig[0]);
+	}else{
+		printf("Warning: Invalid block x dimension (it must me larger than 0 and lower then 65536)\n\n");
+	}
+	
+	//validates blocks dim y
+	isValidFlag = 0;
+	if (args_info.threads_given >= 2) {
+		isValidFlag = args_info.threads_arg[1] >= 1 && args_info.threads_arg[1] <= 65535;
+		
+	}
+	if(isValidFlag){
+		threads.y = args_info.threads_arg[1];
+		strcpy(threads.sy, args_info.threads_orig[1]);
+	}else{
+		printf("Warning: Invalid block y dimension (it must me larger than 0 and lower then 65536)\n\n");
+	}
+	
+	
+	//validates grid dim z
+	isValidFlag = 0;
+	if (args_info.threads_given >= 3) {
+		isValidFlag = args_info.threads_arg[2] >= 1 && args_info.threads_arg[2] <= 65535;
+		
+	}
+	if(isValidFlag){
+		threads.z = args_info.threads_arg[2];
+		strcpy(threads.sz, args_info.threads_orig[2]);
+	}else{
+		printf("Warning: Invalid block z dimension (it must me larger than 0 and lower then 65536)\n\n");
 	}
 	numOfThreads = threads.x * threads.y * threads.z;
+	
 	//creates hashtable where the key is a template tag to be replace by the key's value
 	tabela = tabela_criar(10, (LIBERTAR_FUNC)
 			      freeElement);
@@ -131,26 +155,31 @@ int main(int argc, char **argv)
 	     "$FREE_TIMER$",
 	     "HANDLE_ERROR(cudaEventDestroy(start));\n"
 	     "\tHANDLE_ERROR(cudaEventDestroy(stop));");
+	
 	     
 	tabela_inserir(tabela, "$BX$", blocks.sx);
 	
 	tabela_inserir(tabela, "$BY$", blocks.sy);
 	
 	tabela_inserir(tabela, "$BZ$", blocks.sz);
-	sprintf(dimension, "%d", threads.x);
-	tabela_inserir(tabela, "$TX$", dimension);
-	sprintf(dimension, "%d", threads.y);
-	tabela_inserir(tabela, "$TY$", dimension);
-	sprintf(dimension, "%d", threads.z);
-	tabela_inserir(tabela, "$TZ$", dimension);
+
+
+
+	tabela_inserir(tabela, "$TX$", threads.sx);
+	
+	tabela_inserir(tabela, "$TY$", threads.sy);
+	
+	tabela_inserir(tabela, "$TZ$", threads.sz);
+	
 	//end insert key-value into hashtable
 	//reads the template
-	template = fileToString(argv[1]);
+	template = fileToString(TEMPLATE1);
 	//a list containing all keys of hashtable
 	keys = tabela_criar_lista_chaves(tabela);
 	//iterater for the list of keys
 	iterador = lista_criar_iterador(keys);
 	//for each key, replaces the key in the template for its value
+	
 	char *it;
 	while ((it = (char *)
 		iterador_proximo_elemento(iterador))
