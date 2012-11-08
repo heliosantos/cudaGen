@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 
 	char *template;
 	char dimension[6] = "\0";
-
+	int isValidFlag = 0;
     /**
      * captura e processa os argumento de  entrada
      */
@@ -42,23 +42,45 @@ int main(int argc, char **argv)
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
 
-	//grid dim
-	if (args_info.blocks_given) {
-		if (args_info.blocks_orig[0] != NULL) {
-			blocks.x = atoi(args_info.blocks_orig[0]);
-			blocks.x = blocks.x > 0
-			    && blocks.x <= 65535 ? blocks.x : 1;
-		}
-		if (args_info.blocks_orig[1] != NULL) {
-			blocks.y = atoi(args_info.blocks_orig[1]);
-			blocks.y = blocks.y > 0
-			    && blocks.y <= 65535 ? blocks.y : 1;
-		}
-		if (args_info.blocks_orig[2] != NULL) {
-			blocks.z = atoi(args_info.blocks_orig[2]);
-			blocks.z = blocks.z > 0
-			    && blocks.z <= 65535 ? blocks.z : 1;
-		}
+	
+	//validates grid dim x
+	isValidFlag = 0;
+	if (args_info.blocks_given >= 1) {
+		isValidFlag = args_info.blocks_arg[0] >= 1 && args_info.blocks_arg[0] <= 65535;
+		
+	}
+	if(isValidFlag){
+		blocks.x = args_info.blocks_arg[0];
+		strcpy(blocks.sx, args_info.blocks_orig[0]);
+	}else{
+		printf("Warning: Invalid grid x dimension (it must me larger than 0 and lower then 65536)\n\n");
+	}
+	
+	//validates grid dim y
+	isValidFlag = 0;
+	if (args_info.blocks_given >= 2) {
+		isValidFlag = args_info.blocks_arg[1] >= 1 && args_info.blocks_arg[1] <= 65535;
+		
+	}
+	if(isValidFlag){
+		blocks.y = args_info.blocks_arg[1];
+		strcpy(blocks.sy, args_info.blocks_orig[1]);
+	}else{
+		printf("Warning: Invalid grid y dimension (it must me larger than 0 and lower then 65536)\n\n");
+	}
+	
+	
+	//validates grid dim z
+	isValidFlag = 0;
+	if (args_info.blocks_given >= 3) {
+		isValidFlag = args_info.blocks_arg[2] >= 1 && args_info.blocks_arg[2] <= 65535;
+		
+	}
+	if(isValidFlag){
+		blocks.z = args_info.blocks_arg[2];
+		strcpy(blocks.sz, args_info.blocks_orig[2]);
+	}else{
+		printf("Warning: Invalid grid z dimension (it must me larger than 0 and lower then 65536)\n\n");
 	}
 	numOfBlocks = blocks.x * blocks.y * blocks.z;
 
@@ -109,12 +131,12 @@ int main(int argc, char **argv)
 	     "$FREE_TIMER$",
 	     "HANDLE_ERROR(cudaEventDestroy(start));\n"
 	     "\tHANDLE_ERROR(cudaEventDestroy(stop));");
-	sprintf(dimension, "%d", blocks.x);
-	tabela_inserir(tabela, "$BX$", dimension);
-	sprintf(dimension, "%d", blocks.y);
-	tabela_inserir(tabela, "$BY$", dimension);
-	sprintf(dimension, "%d", blocks.z);
-	tabela_inserir(tabela, "$BZ$", dimension);
+	     
+	tabela_inserir(tabela, "$BX$", blocks.sx);
+	
+	tabela_inserir(tabela, "$BY$", blocks.sy);
+	
+	tabela_inserir(tabela, "$BZ$", blocks.sz);
 	sprintf(dimension, "%d", threads.x);
 	tabela_inserir(tabela, "$TX$", dimension);
 	sprintf(dimension, "%d", threads.y);

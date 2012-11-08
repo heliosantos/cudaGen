@@ -13,6 +13,9 @@ typedef struct Coords3D_s {
 	int x;
 	int y;
 	int z;
+	char sx[6];
+	char sy[6];
+	char sz[6];
 } Coords3D;
 
 int createKernel(char *outputDir, char *kernelName, int geometry);
