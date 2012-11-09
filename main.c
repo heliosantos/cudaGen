@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "main.h"
+#include "dirutils.h"
 #include "cmdline.h"
 #include "hashtables.h"
 
@@ -21,7 +22,7 @@
 int main(int argc, char **argv)
 {
 	struct gengetopt_args_info args_info;
-	//char *str;
+
 	Coords3D blocks;
 	Coords3D threads;
 
@@ -37,96 +38,126 @@ int main(int argc, char **argv)
 	char dimension[6] = "\0";
 	int isValidFlag = 0;
     /**
-     * captura e processa os argumento de  entrada
+     * capture an processe of input parameters
      */
 
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
-	
+
 	//validates grid dim x
 	isValidFlag = 0;
 	if (args_info.blocks_given >= 1) {
-		isValidFlag = args_info.blocks_arg[0] >= 1 && args_info.blocks_arg[0] <= 65535;
-		
+		isValidFlag = args_info.blocks_arg[0] >= 1
+		    && args_info.blocks_arg[0] <= 65535;
 	}
-	
-	if(isValidFlag){
+
+	if (isValidFlag) {
 		blocks.x = args_info.blocks_arg[0];
 		strcpy(blocks.sx, args_info.blocks_orig[0]);
-	}else{
-		printf("Warning: Invalid grid x dimension (it must me larger than 0 and lower then 65536)\n\n");
+	} else {
+		printf
+		    ("Warning: Invalid grid x dimension (it must be larger than 0 and lower than 65536)\n\n");
 	}
-	
+
 	//validates grid dim y
 	isValidFlag = 0;
 	if (args_info.blocks_given >= 2) {
-		isValidFlag = args_info.blocks_arg[1] >= 1 && args_info.blocks_arg[1] <= 65535;
-		
+		isValidFlag = args_info.blocks_arg[1] >= 1
+		    && args_info.blocks_arg[1] <= 65535;
+
 	}
-	if(isValidFlag){
+	if (isValidFlag) {
 		blocks.y = args_info.blocks_arg[1];
 		strcpy(blocks.sy, args_info.blocks_orig[1]);
-	}else{
-		printf("Warning: Invalid grid y dimension (it must me larger than 0 and lower then 65536)\n\n");
+	} else {
+		printf
+		    ("Warning: Invalid grid y dimension (it must be larger than 0 and lower than 65536)\n\n");
 	}
-	
-	
+
 	//validates grid dim z
 	isValidFlag = 0;
 	if (args_info.blocks_given >= 3) {
-		isValidFlag = args_info.blocks_arg[2] >= 1 && args_info.blocks_arg[2] <= 65535;
-		
+		isValidFlag = args_info.blocks_arg[2] >= 1
+		    && args_info.blocks_arg[2] <= 65535;
+
 	}
-	if(isValidFlag){
+	if (isValidFlag) {
 		blocks.z = args_info.blocks_arg[2];
 		strcpy(blocks.sz, args_info.blocks_orig[2]);
-	}else{
-		printf("Warning: Invalid grid z dimension (it must me larger than 0 and lower then 65536)\n\n");
+	} else {
+		printf
+		    ("Warning: Invalid grid z dimension (it must be larger than 0 and lower than 65536)\n\n");
 	}
 	numOfBlocks = blocks.x * blocks.y * blocks.z;
 
 	//validates blocks dim x
 	isValidFlag = 0;
 	if (args_info.threads_given >= 1) {
-		isValidFlag = args_info.threads_arg[0] >= 1 && args_info.threads_arg[0] <= 65535;
-		
+		isValidFlag = args_info.threads_arg[0] >= 1
+		    && args_info.threads_arg[0] <= 65535;
 	}
-	
-	if(isValidFlag){
+
+	if (isValidFlag) {
 		threads.x = args_info.threads_arg[0];
 		strcpy(threads.sx, args_info.threads_orig[0]);
-	}else{
-		printf("Warning: Invalid block x dimension (it must me larger than 0 and lower then 65536)\n\n");
+	} else {
+		printf
+		    ("Warning: Invalid block x dimension (it must be larger than 0 and equal or lower than 1024)\n\n");
 	}
-	
+
 	//validates blocks dim y
 	isValidFlag = 0;
 	if (args_info.threads_given >= 2) {
-		isValidFlag = args_info.threads_arg[1] >= 1 && args_info.threads_arg[1] <= 65535;
-		
+		isValidFlag = args_info.threads_arg[1] >= 1
+		    && args_info.threads_arg[1] <= 65535;
+
 	}
-	if(isValidFlag){
+	if (isValidFlag) {
 		threads.y = args_info.threads_arg[1];
 		strcpy(threads.sy, args_info.threads_orig[1]);
-	}else{
-		printf("Warning: Invalid block y dimension (it must me larger than 0 and lower then 65536)\n\n");
+	} else {
+		printf
+		    ("Warning: Invalid block y dimension (it must be larger than 0 and equal or lower than 1024)\n\n");
 	}
-	
-	
+
 	//validates grid dim z
 	isValidFlag = 0;
 	if (args_info.threads_given >= 3) {
-		isValidFlag = args_info.threads_arg[2] >= 1 && args_info.threads_arg[2] <= 65535;
-		
+		isValidFlag = args_info.threads_arg[2] >= 1
+		    && args_info.threads_arg[2] <= 65535;
+
 	}
-	if(isValidFlag){
+	if (isValidFlag) {
 		threads.z = args_info.threads_arg[2];
 		strcpy(threads.sz, args_info.threads_orig[2]);
-	}else{
-		printf("Warning: Invalid block z dimension (it must me larger than 0 and lower then 65536)\n\n");
+	} else {
+		printf
+		    ("Warning: Invalid block z dimension (it must be larger than 0 and equal or lower than 512)\n\n");
 	}
 	numOfThreads = threads.x * threads.y * threads.z;
-	
+
+	//reads the output directory
+	outputDir = args_info.dir_arg;
+	if (!createDirectory(outputDir)) {
+		int dirSize = strlen(outputDir);
+		char *append = getDateTime();
+		int totSize = dirSize + strlen(append);
+		char *newName = (char *)malloc(totSize);
+
+		strcpy(newName, outputDir);
+		strcat(newName, append);
+		createDirectory(newName);
+		outputDir = (char *)malloc(strlen(newName));
+		strcpy(outputDir, newName);
+
+		free(append);
+		free(newName);
+	}
+
+	/**
+     * end capture an processe of input parameters
+     */
+
 	//creates hashtable where the key is a template tag to be replace by the key's value
 	tabela = tabela_criar(10, (LIBERTAR_FUNC)
 			      freeElement);
@@ -155,22 +186,19 @@ int main(int argc, char **argv)
 	     "$FREE_TIMER$",
 	     "HANDLE_ERROR(cudaEventDestroy(start));\n"
 	     "\tHANDLE_ERROR(cudaEventDestroy(stop));");
-	
-	     
+
 	tabela_inserir(tabela, "$BX$", blocks.sx);
-	
+
 	tabela_inserir(tabela, "$BY$", blocks.sy);
-	
+
 	tabela_inserir(tabela, "$BZ$", blocks.sz);
 
-
-
 	tabela_inserir(tabela, "$TX$", threads.sx);
-	
+
 	tabela_inserir(tabela, "$TY$", threads.sy);
-	
+
 	tabela_inserir(tabela, "$TZ$", threads.sz);
-	
+
 	//end insert key-value into hashtable
 	//reads the template
 	template = fileToString(TEMPLATE1);
@@ -179,7 +207,7 @@ int main(int argc, char **argv)
 	//iterater for the list of keys
 	iterador = lista_criar_iterador(keys);
 	//for each key, replaces the key in the template for its value
-	
+
 	char *it;
 	while ((it = (char *)
 		iterador_proximo_elemento(iterador))
@@ -199,14 +227,16 @@ int main(int argc, char **argv)
 }
 
 void freeElement(char
-		 *element) {
+		 *element)
+{
 
 }
 
 //http://stackoverflow.com/questions/1285097/how-to-copy-text-file-to-string-in-c
 char
 *fileToString(char
-	      *fileName) {
+	      *fileName)
+{
 	long f_size;
 	char *code;
 	size_t code_s, result;
@@ -229,7 +259,8 @@ char
 *str_replace(const char
 	     *s, const char
 	     *old, const char
-	     *new) {
+	     *new)
+{
 	size_t slen = strlen(s) + 1;
 	char *cout = malloc(slen), *p = cout;
 	if (!p)
