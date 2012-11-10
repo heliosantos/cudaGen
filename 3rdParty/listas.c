@@ -7,10 +7,9 @@
  * @date Abril 2004
  * @version 1
  */
- 
+
 #include "listas.h"
 #include <stdlib.h>
-
 
 /**
  * Funcao interna que insere os elementos numa lista de forma ordenada
@@ -18,24 +17,26 @@
  * @param elem ponteiro para o elemento a inserir  
  * @param compara_elem funcao de comparacao
  */
-static void lista_inserir_ordenado(LISTA_GENERICA_T* lista, void* elem, COMPARAR_FUNC compara_elem);
-
+static void lista_inserir_ordenado(LISTA_GENERICA_T * lista, void *elem,
+				   COMPARAR_FUNC compara_elem);
 
 /**
  * Funcao que cria uma lista generica
  * @param liberta_elem ponteiro para uma funcao que liberta a memoria de um elemento da lista
  * @return ponteiro para a lista criada
  */
-LISTA_GENERICA_T* lista_criar(LIBERTAR_FUNC liberta_elem) {
-	LISTA_GENERICA_T* lista = (LISTA_GENERICA_T*)malloc(sizeof(LISTA_GENERICA_T));
-	
-	lista->base = (NO_T*)malloc(sizeof(NO_T));
+LISTA_GENERICA_T *lista_criar(LIBERTAR_FUNC liberta_elem)
+{
+	LISTA_GENERICA_T *lista =
+	    (LISTA_GENERICA_T *) malloc(sizeof(LISTA_GENERICA_T));
+
+	lista->base = (NO_T *) malloc(sizeof(NO_T));
 	lista->base->prox = lista->base->ant = lista->base;
 	lista->base->elem = NULL;
 	lista->liberta_memoria = liberta_elem;
-	
+
 	lista->numero_elementos = 0;
-	
+
 	return lista;
 }
 
@@ -46,7 +47,8 @@ LISTA_GENERICA_T* lista_criar(LIBERTAR_FUNC liberta_elem) {
  * ser alocado exteriormente)
  *
  */
-void lista_inserir(LISTA_GENERICA_T* lista, void* elem) {
+void lista_inserir(LISTA_GENERICA_T * lista, void *elem)
+{
 	lista_inserir_fim(lista, elem);
 }
 
@@ -57,15 +59,16 @@ void lista_inserir(LISTA_GENERICA_T* lista, void* elem) {
  * ser alocado exteriormente)
  *
  */
-void lista_inserir_inicio(LISTA_GENERICA_T* lista, void* elem) {
-	NO_T* aux = (NO_T*)malloc(sizeof(NO_T));
-	
+void lista_inserir_inicio(LISTA_GENERICA_T * lista, void *elem)
+{
+	NO_T *aux = (NO_T *) malloc(sizeof(NO_T));
+
 	aux->prox = lista->base->prox;
 	aux->prox->ant = aux;
 	aux->ant = lista->base;
-	aux->elem = elem;	
+	aux->elem = elem;
 	lista->base->prox = aux;
-		
+
 	lista->numero_elementos++;
 }
 
@@ -76,21 +79,20 @@ void lista_inserir_inicio(LISTA_GENERICA_T* lista, void* elem) {
  * ser alocado exteriormente)
  *
  */
-void lista_inserir_fim(LISTA_GENERICA_T* lista, void* elem) {
-	NO_T* aux = (NO_T*)malloc(sizeof(NO_T));
-	NO_T* previo = lista->base->ant;
-	
+void lista_inserir_fim(LISTA_GENERICA_T * lista, void *elem)
+{
+	NO_T *aux = (NO_T *) malloc(sizeof(NO_T));
+	NO_T *previo = lista->base->ant;
+
 	aux->elem = elem;
 	aux->prox = lista->base;
 	aux->ant = previo;
 	previo->prox = aux;
 	lista->base->ant = aux;
 
-	
 	lista->numero_elementos++;
-		
-}
 
+}
 
 /**
  * Funcao que remove um elemento da lista.
@@ -100,16 +102,17 @@ void lista_inserir_fim(LISTA_GENERICA_T* lista, void* elem) {
  * ponteiro nao ser necessario, nao esquecer de libertar a memoria).
  * Devolve NULL caso o elemento nao existe
  */
-void* lista_remover(LISTA_GENERICA_T* lista, void* elem) {
-	NO_T* aux = lista->base->prox;
-	void* elemento;
-	
+void *lista_remover(LISTA_GENERICA_T * lista, void *elem)
+{
+	NO_T *aux = lista->base->prox;
+	void *elemento;
+
 	while (aux != lista->base) {
 		if (aux->elem == elem) {
 			elemento = aux->elem;
 			aux->ant->prox = aux->prox;
 			aux->prox->ant = aux->ant;
-			free(aux);			
+			free(aux);
 			lista->numero_elementos--;
 			return elemento;
 		}
@@ -125,9 +128,10 @@ void* lista_remover(LISTA_GENERICA_T* lista, void* elem) {
  * ponteiro nao ser necessario, nao esquecer de libertar a memoria).
  * Devolve NULL caso a lista se encontre vazia
  */
-void* lista_remover_inicio(LISTA_GENERICA_T* lista) {
-	NO_T* aux = lista->base->prox;
-	void* elemento;
+void *lista_remover_inicio(LISTA_GENERICA_T * lista)
+{
+	NO_T *aux = lista->base->prox;
+	void *elemento;
 
 	if (aux == lista->base)
 		return NULL;
@@ -135,7 +139,7 @@ void* lista_remover_inicio(LISTA_GENERICA_T* lista) {
 	elemento = aux->elem;
 	aux->ant->prox = aux->prox;
 	aux->prox->ant = aux->ant;
-	free(aux);			
+	free(aux);
 	lista->numero_elementos--;
 	return elemento;
 }
@@ -147,9 +151,10 @@ void* lista_remover_inicio(LISTA_GENERICA_T* lista) {
  * ponteiro nao ser necessario, nao esquecer de libertar a memoria).
  * Devolve NULL caso a lista se encontre vazia
  */
-void* lista_remover_fim(LISTA_GENERICA_T* lista) {
-	NO_T* aux = lista->base->ant;
-	void* elemento;
+void *lista_remover_fim(LISTA_GENERICA_T * lista)
+{
+	NO_T *aux = lista->base->ant;
+	void *elemento;
 
 	if (aux == lista->base)
 		return NULL;
@@ -157,7 +162,7 @@ void* lista_remover_fim(LISTA_GENERICA_T* lista) {
 	elemento = aux->elem;
 	aux->ant->prox = aux->prox;
 	aux->prox->ant = aux->ant;
-	free(aux);			
+	free(aux);
 	lista->numero_elementos--;
 	return elemento;
 }
@@ -166,10 +171,11 @@ void* lista_remover_fim(LISTA_GENERICA_T* lista) {
  * Funcao que remove todos os elementos da lista.
  * @param lista ponteiro para a lista generica
  */
-void lista_remover_todos(LISTA_GENERICA_T* lista) {
-	NO_T* proximo = lista->base->prox;
-	NO_T* aux;
-	
+void lista_remover_todos(LISTA_GENERICA_T * lista)
+{
+	NO_T *proximo = lista->base->prox;
+	NO_T *aux;
+
 	while (proximo != lista->base) {
 		aux = proximo;
 		proximo = proximo->prox;
@@ -177,31 +183,30 @@ void lista_remover_todos(LISTA_GENERICA_T* lista) {
 			lista->liberta_memoria(aux->elem);
 		free(aux);
 	}
-	lista->base->prox = lista->base->ant = lista->base;	
+	lista->base->prox = lista->base->ant = lista->base;
 	lista->numero_elementos = 0;
 }
-
-
 
 /**
  * Funcao que devolve o numero de elementos da lista.
  * @param lista ponteiro para a lista generica
  * @return o numero de elementos na lista
  */
-int lista_numero_elementos(LISTA_GENERICA_T* lista) {
+int lista_numero_elementos(LISTA_GENERICA_T * lista)
+{
 	return lista->numero_elementos;
 }
-
 
 /**
  * Funcao que destroi a lista.
  * @param lista ponteiro para a lista generica (passado por referência)
  */
-void lista_destruir(LISTA_GENERICA_T** lista) {
+void lista_destruir(LISTA_GENERICA_T ** lista)
+{
 	lista_remover_todos(*lista);
 	free((*lista)->base);
 	free(*lista);
-	*lista = NULL;	
+	*lista = NULL;
 }
 
 /**
@@ -212,15 +217,17 @@ void lista_destruir(LISTA_GENERICA_T** lista) {
  * @param compara_elem funcao de comparacao
  * @return ponteiro para o elemento caso este exista; NULL caso contrario
  */
-void* lista_pesquisar(LISTA_GENERICA_T* lista, void* elem, COMPARAR_FUNC compara_elem) {
-	NO_T* aux = lista->base->prox;
-	
+void *lista_pesquisar(LISTA_GENERICA_T * lista, void *elem,
+		      COMPARAR_FUNC compara_elem)
+{
+	NO_T *aux = lista->base->prox;
+
 	while (aux != lista->base) {
-		if (compara_elem(elem, aux->elem) == 0) 
+		if (compara_elem(elem, aux->elem) == 0)
 			return aux->elem;
 		aux = aux->prox;
 	}
-	return NULL;	
+	return NULL;
 }
 
 /**
@@ -228,9 +235,10 @@ void* lista_pesquisar(LISTA_GENERICA_T* lista, void* elem, COMPARAR_FUNC compara
  * @param lista ponteiro para a lista generica
  * @param aplica_elem funcao a chamar para cada elemento da lista
  */
-void lista_aplicar_todos(LISTA_GENERICA_T* lista, APLICAR_FUNC aplica_elem) {
-	NO_T* aux = lista->base->prox;
-	
+void lista_aplicar_todos(LISTA_GENERICA_T * lista, APLICAR_FUNC aplica_elem)
+{
+	NO_T *aux = lista->base->prox;
+
 	while (aux != lista->base) {
 		aplica_elem(aux->elem);
 		aux = aux->prox;
@@ -242,13 +250,14 @@ void lista_aplicar_todos(LISTA_GENERICA_T* lista, APLICAR_FUNC aplica_elem) {
  * @param lista ponteiro para a lista generica
  * @return iterador para a lista
  */
-ITERADOR_T* lista_criar_iterador(LISTA_GENERICA_T* lista) {
-	ITERADOR_T* iterador = (ITERADOR_T*)malloc(sizeof(ITERADOR_T));
-		
+ITERADOR_T *lista_criar_iterador(LISTA_GENERICA_T * lista)
+{
+	ITERADOR_T *iterador = (ITERADOR_T *) malloc(sizeof(ITERADOR_T));
+
 	/* Cria uma copia da lista */
-	LISTA_GENERICA_T * nova_lista = lista_criar(NULL);
-	NO_T* aux = lista->base->prox;
-				
+	LISTA_GENERICA_T *nova_lista = lista_criar(NULL);
+	NO_T *aux = lista->base->prox;
+
 	while (aux != lista->base) {
 		lista_inserir_fim(nova_lista, aux->elem);
 		aux = aux->prox;
@@ -267,32 +276,34 @@ ITERADOR_T* lista_criar_iterador(LISTA_GENERICA_T* lista) {
  * @param compara_elem funcao de comparacao para ordenar a lista
  * @return iterador para uma versao ordenada da lista
  */
-ITERADOR_T* lista_criar_iterador_ordenado(LISTA_GENERICA_T* lista, COMPARAR_FUNC compara_elem) {
-	ITERADOR_T* iterador = (ITERADOR_T*)malloc(sizeof(ITERADOR_T));
-	
+ITERADOR_T *lista_criar_iterador_ordenado(LISTA_GENERICA_T * lista,
+					  COMPARAR_FUNC compara_elem)
+{
+	ITERADOR_T *iterador = (ITERADOR_T *) malloc(sizeof(ITERADOR_T));
+
 	/* Cria uma versao ordenada da lista */
-	LISTA_GENERICA_T * lista_ordenada = lista_criar(NULL);
-	NO_T* aux = lista->base->prox;
-			
+	LISTA_GENERICA_T *lista_ordenada = lista_criar(NULL);
+	NO_T *aux = lista->base->prox;
+
 	while (aux != lista->base) {
 		lista_inserir_ordenado(lista_ordenada, aux->elem, compara_elem);
 		aux = aux->prox;
 	}
-	
+
 	iterador->base = iterador->actual = lista_ordenada->base;
 
 	free(lista_ordenada);
-	
+
 	return iterador;
 }
-
 
 /**
  * Funcao que devolve o proximo elemento do iterador.
  * @param iterador ponteiro para o iterador
  * @return ponteiro para o proximo elemento;NULL caso tenha chegado ao fim do iterador
  */
-void* iterador_proximo_elemento(ITERADOR_T* iterador) {
+void *iterador_proximo_elemento(ITERADOR_T * iterador)
+{
 	iterador->actual = iterador->actual->prox;
 	if (iterador->actual == iterador->base)
 		return NULL;
@@ -303,11 +314,12 @@ void* iterador_proximo_elemento(ITERADOR_T* iterador) {
  * Funcao que destroi o iterador.
  * @param iterador ponteiro para o iterador passado por referencia
  */
-void iterador_destruir(ITERADOR_T** iterador) {
+void iterador_destruir(ITERADOR_T ** iterador)
+{
 	ITERADOR_T *it = *iterador;
-	NO_T* aux = it->base->prox;
-	NO_T* liberta;
-	
+	NO_T *aux = it->base->prox;
+	NO_T *liberta;
+
 	while (aux != it->base) {
 		liberta = aux;
 		aux = aux->prox;
@@ -318,24 +330,25 @@ void iterador_destruir(ITERADOR_T** iterador) {
 	*iterador = NULL;
 }
 
-
-
 /**
  * Funcao interna que insere os elementos numa lista de forma ordenada
  * @param lista ponteiro para a lista generica
  * @param elem ponteiro para o elemento a inserir  
  * @param compara_elem funcao de comparacao
  */
-void lista_inserir_ordenado(LISTA_GENERICA_T* lista, void* elem, COMPARAR_FUNC compara_elem) {
-	NO_T* previo = lista->base;
-	NO_T* aux = (NO_T*)malloc(sizeof(NO_T));
-	
-	while (previo->prox != lista->base && compara_elem(elem, previo->prox->elem) > 0) {
+void lista_inserir_ordenado(LISTA_GENERICA_T * lista, void *elem,
+			    COMPARAR_FUNC compara_elem)
+{
+	NO_T *previo = lista->base;
+	NO_T *aux = (NO_T *) malloc(sizeof(NO_T));
+
+	while (previo->prox != lista->base
+	       && compara_elem(elem, previo->prox->elem) > 0) {
 		previo = previo->prox;
 	}
-		
+
 	aux->prox = previo->prox;
 	aux->ant = previo;
-	aux->elem = elem;	
+	aux->elem = elem;
 	previo->prox = aux;
 }

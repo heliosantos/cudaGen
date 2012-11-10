@@ -26,7 +26,7 @@
 #include "templateGen.h"
 #include "dirutils.h"
 
-#include "3rdParty/debug.h"
+#include "debug.h"
 
 
 /**

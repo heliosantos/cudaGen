@@ -15,17 +15,16 @@
 #include "listas.h"
 
 typedef struct entrada {
-	char* chave;
-	void* elemento;
+	char *chave;
+	void *elemento;
 	int activo;
 } ENTRADA_T;
 
 typedef struct hashtable {
-	ENTRADA_T** entradas;	
+	ENTRADA_T **entradas;
 	int total_activos, total_inactivos, tamanho;
-	LIBERTAR_FUNC liberta_elemento;	
+	LIBERTAR_FUNC liberta_elemento;
 } HASHTABLE_T;
-
 
 /**
  * Funcao que cria uma hashtable
@@ -33,7 +32,7 @@ typedef struct hashtable {
  * @param liberta_elem funcao para libertar a memoria de um elemento
  * @return ponteiro para a hashtable criada
  */
-HASHTABLE_T* tabela_criar(int tamanho, LIBERTAR_FUNC liberta_elem);
+HASHTABLE_T *tabela_criar(int tamanho, LIBERTAR_FUNC liberta_elem);
 
 /**
  * Funcao que insere um elemento na tabela
@@ -42,7 +41,7 @@ HASHTABLE_T* tabela_criar(int tamanho, LIBERTAR_FUNC liberta_elem);
  * @param elem elemento a colocar na tabela (este elemento deve
  * ser alocado exteriormente)
  */
-void tabela_inserir(HASHTABLE_T* tabela, char* chave, void* elem);
+void tabela_inserir(HASHTABLE_T * tabela, char *chave, void *elem);
 
 /**
  * Funcao que remove um elemento da tabela.
@@ -52,29 +51,26 @@ void tabela_inserir(HASHTABLE_T* tabela, char* chave, void* elem);
  * ponteiro nao ser necessario, nao esquecer de libertar a memoria).
  * Devolve NULL caso nao exista nenhum elemento associado 'a chave
  */
-void* tabela_remover(HASHTABLE_T* tabela, char* chave);
+void *tabela_remover(HASHTABLE_T * tabela, char *chave);
 
 /**
  * Funcao que remove todos os elementos da tabela.
  * @param tabela ponteiro para a tabela de hash
  */
-void tabela_remover_todos(HASHTABLE_T* tabela);
-
-
+void tabela_remover_todos(HASHTABLE_T * tabela);
 
 /**
  * Funcao que devolve o numero de elementos da tabela.
  * @param tabela ponteiro para a tabela de hash
  * @return o numero de elementos na tabela
  */
-int tabela_numero_elementos(HASHTABLE_T* tabela);
-
+int tabela_numero_elementos(HASHTABLE_T * tabela);
 
 /**
  * Funcao que destroi a tabela.
  * @param tabela ponteiro para a tabela de hash (passado por referência)
  */
-void tabela_destruir(HASHTABLE_T** tabela);
+void tabela_destruir(HASHTABLE_T ** tabela);
 
 /**
  * Funcao que devolve o elemento associado 'a chave indicada.
@@ -82,21 +78,20 @@ void tabela_destruir(HASHTABLE_T** tabela);
  * @param chave chave do elemento a consultar
  * @return o ponteiro para o elemento caso exista; NULL caso contrario
  */
-void* tabela_consultar(HASHTABLE_T* tabela, char* chave);
-
+void *tabela_consultar(HASHTABLE_T * tabela, char *chave);
 
 /**
  * Funcao que devolve uma lista com as chaves da tabela.
  * @param tabela ponteiro para a tabela de hash
  * @return lista de chaves
  */
-LISTA_GENERICA_T* tabela_criar_lista_chaves(HASHTABLE_T* tabela);
+LISTA_GENERICA_T *tabela_criar_lista_chaves(HASHTABLE_T * tabela);
 
 /**
  * Funcao que devolve uma lista com os elementos da tabela.
  * @param tabela ponteiro para a tabela de hash
  * @return lista de elementos
  */
-LISTA_GENERICA_T* tabela_criar_lista_elementos(HASHTABLE_T* tabela);
+LISTA_GENERICA_T *tabela_criar_lista_elementos(HASHTABLE_T * tabela);
 
 #endif

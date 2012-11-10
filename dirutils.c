@@ -17,7 +17,7 @@
 #include <errno.h>
 
 #include "dirutils.h"
-#include "debug.h"
+#include "3rdParty/debug.h"
 
 bool directoryExists(char *directory)
 {

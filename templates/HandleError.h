@@ -13,16 +13,15 @@
  * @note: the function should be called through the 
  * 	macro 'HANDLE_ERROR'
  *------------------------------------------------------------------*/
-static void HandleError( cudaError_t err,
-                         const char *file,
-                         int line ) {
-    if (err != cudaSuccess) 
-    {
-        printf( "[ERROR] '%s' (%d) in '%s' at line '%d'\n",
-		cudaGetErrorString(err),err,file,line);
-        exit( EXIT_FAILURE );
-    }
+static void HandleError(cudaError_t err, const char *file, int line)
+{
+	if (err != cudaSuccess) {
+		printf("[ERROR] '%s' (%d) in '%s' at line '%d'\n",
+		       cudaGetErrorString(err), err, file, line);
+		exit(EXIT_FAILURE);
+	}
 }
+
 /* The HANDLE_ERROR macro */
 #define HANDLE_ERROR(err) (HandleError(err, __FILE__, __LINE__ ))
 
@@ -32,17 +31,17 @@ static void HandleError( cudaError_t err,
  * called directly, it should be called through the CHECK_KERNEL_EXEC
  * macro.
  */
-static void CheckKernelExec(const char *file,const int line){
-        cudaError_t err;
-        err = cudaGetLastError();
-        if( err != cudaSuccess ){
-                fprintf(stderr,"[ERROR] '%s' (%d) in '%s' at line '%d'\n",
-                                cudaGetErrorString(err),err,file,line);
-                exit( EXIT_FAILURE );
-        }
+static void CheckKernelExec(const char *file, const int line)
+{
+	cudaError_t err;
+	err = cudaGetLastError();
+	if (err != cudaSuccess) {
+		fprintf(stderr, "[ERROR] '%s' (%d) in '%s' at line '%d'\n",
+			cudaGetErrorString(err), err, file, line);
+		exit(EXIT_FAILURE);
+	}
 }
 
 #define CHECK_KERNEL_EXEC()     CheckKernelExec(__FILE__,__LINE__)
 
 #endif
-

@@ -14,7 +14,8 @@
 #include "main.h"
 #include "dirutils.h"
 #include "cmdline.h"
-#include "hashtables.h"
+#include "3rdParty/hashtables.h"
+#include "3rdParty/debug.h"
 
 #define MAIN_FILE "main.cu"
 #define TEMPLATE1 "templates/CudaTemplate.cu"
@@ -36,16 +37,54 @@ int main(int argc, char **argv)
 
 	char *template;
 	
+	
+	int hasOpt = FALSE;
+	int cudaTemplate = FALSE;
+	int cTemplate = FALSE;
+	int cudaTemplateOnlyKernelDefinition = FALSE;
+	
+	int forceByDefault = FALSE;
+	
+	char *dirname;
+	char *path=NULL;
+	char *kernelProto;
+	
+	
 	int isValidFlag = 0;
 	
-    /**
-     * capture an processe of input parameters
-     */
-     
+	/**
+	* capture an processe of input parameters
+	*/
+
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
 	
+		
 	
+	if(args_info.about_given)
+	{
+	  return 0;
+	}
+	
+	if(args_info.Force_given)
+	  {
+	    forceByDefault = TRUE;
+	  }
+	  
+	  if(args_info.regular_code_given)
+	  {
+	    cTemplate = TRUE;
+	    hasOpt = TRUE;
+	  }
+	  
+	  if(args_info.proto_given)
+	  {
+	      cudaTemplate = TRUE;
+	      kernelProto = parseGivenName(args_info.proto_arg);
+	      cudaTemplateOnlyKernelDefinition = TRUE;
+	      hasOpt = TRUE;
+	  }
+   
 	
 	//reads the output directory
 	outputDir = args_info.dir_arg;
