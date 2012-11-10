@@ -20,12 +20,8 @@ typedef struct Coords3D_s {
 
 int createKernel(char *outputDir, char *kernelName, int geometry);
 
-static void iter(const char *key, const char *value, const void *obj);
-
 char *fileToString(char *fileName);
 
 char *str_replace(const char *s, const char *old, const char *new);
-
-void freeElement(char *element);
 
 #endif

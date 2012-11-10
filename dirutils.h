@@ -6,6 +6,8 @@
  *  @author 
  */
 
+
+
 #ifndef DIRUTILS_H
 #define DIRUTILS_H
 
@@ -16,6 +18,6 @@ typedef int bool;
 
 bool directoryExists(char *directory);
 bool createDirectory(char *directory);
-char *getDateTime();
+char *getDateTime(void);
 
 #endif

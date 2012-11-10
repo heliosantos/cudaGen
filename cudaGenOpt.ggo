@@ -7,28 +7,28 @@ version "1"
 
 section "Required group options"
 defgroup "what I want todo" groupdesc="script option" required
-###groupoption "directory" d "destination directory" string default="OutDir" argoptional group="what I want todo"
+###groupoption "dir" d "destination directory" string default="OutDir" argoptional group="what I want todo"
 groupoption "dir"        d  "Output directory. If it already exists, a new one will be created adding YYYY.MM.DD---HHhMM.SSs" default = "OutDir"      string no argoptional group="what I want todo"
 
 groupoption "about"	- "the about info (authors, date, etc.)" group="what I want todo"
 
 section "optional options"
-option "regular-code"   r "Generate simple C template without CUDA" dependon="directory" flag off
-option "Force"          F "force destination directory" dependon="directory" flag off
-option "measure"    m "kernel measure GPU execution time"  dependon="directory" flag off
+option "regular-code"   r "Generate simple C template without CUDA" dependon="dir" flag off
+option "Force"          F "force destination directory" dependon="dir" flag off
+option "measure"    m "kernel measure GPU execution time"  dependon="dir" flag off
 
 section "geometry options"
 defmode "modeGeometry" modedesc="Geometry mode options"
-modeoption "blocks"     b  "Kernel geometry in blocks" int yes multiple(1-3) mode="modeGeometry" dependon="directory"
-###modeoption "blocks"     b "block geometry" int optional multiple mode="modeGeometry" dependon="directory"
-modeoption "threads"    t "threads geometry" int yes optional multiple (1-3) mode="modeGeometry" dependon="directory"
+modeoption "blocks"     b  "Kernel geometry in blocks" int yes multiple(1-3) mode="modeGeometry" dependon="dir"
+###modeoption "blocks"     b "block geometry" int optional multiple mode="modeGeometry" dependon="dir"
+modeoption "threads"    t "threads geometry" int yes optional multiple (1-3) mode="modeGeometry" dependon="dir"
 
 section "kernel mode options"
 defmode "modeKernel" modedesc="Kernel mode options"
-###modeoption "kernel"     k "kernel name" string default="kernel" mode="modeKernel" argoptional optional dependon="directory"
-modeoption "kernel"     k  "Kernel name" string no default="kernel" mode="modeKernel" argoptional optional dependon="directory"
-#modeoption "proto"      p "kernel proto" string default="kernel(int *a_dev,int *b_dev, int *c_dev, int n)" argoptional mode="modeKernel" optional dependon="directory"
-modeoption "proto"      p "kernel proto" string mode="modeKernel" optional dependon="directory"
+###modeoption "kernel"     k "kernel name" string default="kernel" mode="modeKernel" argoptional optional dependon="dir"
+modeoption "kernel"     k  "Kernel name" string no default="kernel" mode="modeKernel" argoptional optional dependon="dir"
+#modeoption "proto"      p "kernel proto" string default="kernel(int *a_dev,int *b_dev, int *c_dev, int n)" argoptional mode="modeKernel" optional dependon="dir"
+modeoption "proto"      p "kernel proto" string mode="modeKernel" optional dependon="dir"
 
 
 

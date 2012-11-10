@@ -4,12 +4,11 @@ CFLAGS = -Wall -W -g -Wmissing-prototypes
 # BIBLIOTECAS
 LIBS = #
 
-
 #++++++++++++++++  ficheiros objectos  +++++++++++++++++++++
 OBJS = main.o cmdline.o dirutils.o hashtables.o listas.o
 
 # nome do executavel 
-PROGRAM = cudagen
+PROGRAM = cudagen.exe
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  
 

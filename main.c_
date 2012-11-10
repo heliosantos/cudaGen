@@ -21,8 +21,9 @@
 
 int main(int argc, char **argv)
 {
+return 0;
 	struct gengetopt_args_info args_info;
-	
+	return 0;
 	Coords3D blocks;
 	Coords3D threads;
 
@@ -37,18 +38,29 @@ int main(int argc, char **argv)
 	char *template;
 	
 	int isValidFlag = 0;
-	
     /**
      * capture an processe of input parameters
      */
-     
+
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
+
+
+
+	printf("antes---------------------------\n");
+#ifdef SHOW_DEBUG
+	printf("output dir: %s\n\n", outputDir);
+#endif
+	printf("depios-----------------------\n");
 	
-	
+	return 0;
 	
 	//reads the output directory
 	outputDir = args_info.dir_arg;
+
+
+	return 0;
+
 
 	//validates grid dim x
 	isValidFlag = 0;
@@ -56,6 +68,7 @@ int main(int argc, char **argv)
 		isValidFlag = args_info.blocks_arg[0] >= 1
 		    && args_info.blocks_arg[0] <= 65535;
 	}
+
 	if (isValidFlag) {
 		blocks.x = args_info.blocks_arg[0];
 		strcpy(blocks.sx, args_info.blocks_orig[0]);
@@ -63,7 +76,6 @@ int main(int argc, char **argv)
 		printf
 		    ("Warning: Invalid grid x dimension (it must be larger than 0 and lower than 65536)\n\n");
 	}
-
 
 	//validates grid dim y
 	isValidFlag = 0;
@@ -141,31 +153,44 @@ int main(int argc, char **argv)
 		    ("Warning: Invalid block z dimension (it must be larger than 0 and equal or lower than 512)\n\n");
 	}
 	numOfThreads = threads.x * threads.y * threads.z;
+
+	
+	printf("antes---------------------------\n");
+#ifdef SHOW_DEBUG
+	printf("output dir: %s\n\n", outputDir);
+#endif
+	printf("depios-----------------------\n");
 	
 	
+	return 0;
 	
 	//reads the output directory
 	outputDir = args_info.dir_arg;
 	
 	if (!createDirectory(outputDir)) {
+	
+		int dirSize = strlen(outputDir);
 		char *append = getDateTime();
-		char *newName = (char *)malloc(strlen(outputDir) + strlen(append) + 1);
+		int totSize = dirSize + strlen(append);
+		char *newName = (char *)malloc(totSize);
 
-		sprintf(newName,"%s%s", outputDir, append);
+		strcpy(newName, outputDir);
+		strcat(newName, append);
 		createDirectory(newName);
-		outputDir = newName;
+		outputDir = (char *)malloc(strlen(newName));
+		strcpy(outputDir, newName);
 
 		free(append);
-		append=NULL;
+		free(newName);
 	}
-
 
 	/**
      * end capture an processe of input parameters
      */
 
 	//creates hashtable where the key is a template tag to be replace by the key's value
-	tabela = tabela_criar(10, NULL);
+	tabela = tabela_criar(10, (LIBERTAR_FUNC)
+			      freeElement);
 	//insert key-value into hashtable
 	tabela_inserir
 	    (tabela,
@@ -215,7 +240,8 @@ int main(int argc, char **argv)
 
 	char *it;
 	while ((it = (char *)
-		iterador_proximo_elemento(iterador)) != NULL) {
+		iterador_proximo_elemento(iterador))
+	       != NULL) {
 		char *temp;
 		temp = str_replace(template, it, (char *)
 				   tabela_consultar(tabela, it));
@@ -224,16 +250,14 @@ int main(int argc, char **argv)
 	}
 
 	printf("%s", template);
-	
-	
-	free(outputDir);
-	free(template);
-	//free gengetopt
-	cmdline_parser_free (&args_info);
 	iterador_destruir(&iterador);
 	lista_destruir(&keys);
 	tabela_destruir(&tabela);
 	return 0;
+}
+
+void freeElement(char *element){
+
 }
 
 //http://stackoverflow.com/questions/1285097/how-to-copy-text-file-to-string-in-c
