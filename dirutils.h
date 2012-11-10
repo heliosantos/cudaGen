@@ -16,8 +16,11 @@ typedef int bool;
 #define TRUE 1;
 #define FALSE 0;
 
+
+int remove_directory(const char *path);
 bool directoryExists(char *directory);
 bool createDirectory(char *directory);
 char *getDateTime(void);
+char *parseGivenName(char *givenName);
 
 #endif

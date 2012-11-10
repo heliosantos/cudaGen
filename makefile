@@ -5,7 +5,7 @@ CFLAGS = -Wall -W -g -Wmissing-prototypes
 LIBS = #
 
 #++++++++++++++++  ficheiros objectos  +++++++++++++++++++++
-OBJS = main.o cmdline.o dirutils.o hashtables.o listas.o
+OBJS = main.o cmdline.o dirutils.o hashtables.o listas.o templateGen.o
 
 # nome do executavel 
 PROGRAM = cudagen.exe
@@ -29,11 +29,12 @@ ${PROGRAM}: ${OBJS}
 
 
 #++++ Lista de dependências dos ficheiros código fonte +++++
-main.o: main.c main.h cmdline.h dirutils.h hashtables.h listas.h
+main.o: main.c main.h cmdline.h dirutils.h hashtables.h listas.h templateGen.h
 dirutils.o: dirutils.c dirutils.h
 cmdline.o: cmdline.c cmdline.h
 hashtables.o: hashtables.c hashtables.h
 listas.o: listas.c listas.h
+templateGen.o: templateGen.c templateGen.h
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
