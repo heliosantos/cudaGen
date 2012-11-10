@@ -20,11 +20,13 @@ typedef struct Coords3D_s {
 } Coords3D;
 
 
-void fill_default_template_hashtable(HASHTABLE_T *tabela, Coords3D *grid_dim, Coords3D *block_dim);
+void fill_cu_main_template_hashtable(HASHTABLE_T *tabela, Coords3D *grid_dim, Coords3D *block_dim);
 
-void fill_prototype_template_hashtable(HASHTABLE_T * tabela, char *kernelName, char *filename, char *currentDate);
+void fill_cu_proto_template_hashtable(HASHTABLE_T * tabela, char *kernelName, char *filename, char *currentDate);
 
 void fill_header_template_hashtable(HASHTABLE_T * tabela, char *filename, char *capitalFilename, char *currentDate);
+
+void fill_c_main_template_hashtable(HASHTABLE_T * tabela, char *filename, char *currentDate);
 
 char *replace_string_with_template_variables(char *template, HASHTABLE_T * tabela);
 

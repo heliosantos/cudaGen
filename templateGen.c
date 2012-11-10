@@ -23,7 +23,7 @@
 
 
 
-void fill_default_template_hashtable(HASHTABLE_T * tabela, Coords3D * grid_dim,
+void fill_cu_main_template_hashtable(HASHTABLE_T * tabela, Coords3D * grid_dim,
 				Coords3D * block_dim)
 {
 //insert key-value into hashtable
@@ -61,7 +61,7 @@ void fill_default_template_hashtable(HASHTABLE_T * tabela, Coords3D * grid_dim,
 	//end insert key-value into hashtable
 }
 
-void fill_prototype_template_hashtable(HASHTABLE_T * tabela, char *kernelName, char *filename, char *currentDate)
+void fill_cu_proto_template_hashtable(HASHTABLE_T * tabela, char *kernelName, char *filename, char *currentDate)
 {
 	tabela_inserir(tabela, "$FILENAME$", filename);
 	tabela_inserir(tabela, "$KERNEL_NAME$", kernelName);
@@ -73,6 +73,12 @@ void fill_header_template_hashtable(HASHTABLE_T * tabela, char *filename, char *
 {
 	tabela_inserir(tabela, "$FILENAME$", filename);
 	tabela_inserir(tabela, "$CAPITAL_FILENAME$", capitalFilename);
+	tabela_inserir(tabela, "$C_DATE$", currentDate);
+}
+
+void fill_c_main_template_hashtable(HASHTABLE_T * tabela, char *filename, char *currentDate)
+{
+	tabela_inserir(tabela, "$FILENAME$", filename);
 	tabela_inserir(tabela, "$C_DATE$", currentDate);
 }
 

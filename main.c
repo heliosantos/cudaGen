@@ -3,7 +3,7 @@
  * @brief Ficheiro principal
  * @date 2012-10-28
  * @author 2120916@my.ipleiria.pt
- * @author
+ * @author cudagen@gmail.com
  * @author
  */
 
@@ -19,11 +19,17 @@
 #include "3rdParty/debug.h"
 
 #define MAIN_FILE "main.cu"
-#define TEMPLATE1 "templates/CudaTemplate.cu"
-#define TEMPLATE2 "templates/CudaTemplate_P.cu"
+
 
 #define C_HEADER_TEMPLATE "templates/CHeaderTemplate.h"
+#define C_MAIN_TEMPLATE "templates/CMainTemplate.c"
+#define C_MAKEFILE_TEMPLATE "templates/CMakefileTemplate"
+
 #define CU_HEADER_TEMPLATE "templates/CuHeaderTemplate.h"
+#define CU_MAIN_TEMPLATE "templates/CuMainTemplate.cu"
+#define CU_MAKEFILE_TEMPLATE "templates/CuMakefileTemplate"
+#define CU_PROTO_TEMPLATE "templates/CuProtoTemplate.cu"
+
 
 int main(int argc, char **argv)
 {
@@ -51,12 +57,6 @@ int main(int argc, char **argv)
 	unsigned int i = 0;
 	
 
-	int hasOpt = FALSE;
-	int cTemplate = FALSE;
-	int forceByDefault = FALSE;
-
-
-	
 	char *currentDate = getDateTime();
 
 	// parse input parameters
@@ -66,46 +66,42 @@ int main(int argc, char **argv)
 	if (args_info.about_given) {
 		return 0;
 	}
-	//TODO
-	if (args_info.Force_given) {
-		forceByDefault = TRUE;
-	}
 
-	//TODO
-	if (args_info.regular_code_given) {
-		cTemplate = TRUE;
-		hasOpt = TRUE;
-	}
-
-	//fills the grid dimension
+	//fills the grid dimension (--blocs option)
 	if(args_info.blocks_given){
 		numOfBlocks = fill_grid_dim(&grid_dim, &args_info);
 	}
-	//fills the blocks dimension
+	//fills the blocks dimension (--threads option)
 	if(args_info.threads_given){
-		numOfThreads = fill_grid_dim(&block_dim, &args_info);
+		numOfThreads = fill_block_dim(&block_dim, &args_info);
 	}
 	
-	//get filename from path
+	// get filename from path (the name of the last directory)
 	getFilenameFromPath(args_info.dir_arg, filename);
 	
-	
+	// the filename in capital letters
 	for(i = 0; i < strlen(filename); i++){
 		capitalFilename[i] = toupper(filename[i]);
 	}
-	capitalFilename[i] = 0;
+	capitalFilename[i] = 0;	
 	
-	
-	
-	// and removes the / character
-	if(args_info.dir_arg[strlen(args_info.dir_arg)-1]=='/')
+	// removes the / character
+	if(args_info.dir_arg[strlen(args_info.dir_arg)-1]=='/'){
 		args_info.dir_arg[strlen(args_info.dir_arg) - 1] = 0;
-		printf("%s\n", args_info.dir_arg);
+	}
 		
 	//creates the output directory
 	if (!createDirectory(args_info.dir_arg)) {
-
-		sprintf(outputDir, "%s%s", args_info.dir_arg, currentDate);
+		
+		if(args_info.Force_given){
+			// removes the existing directoy	
+			remove_directory(args_info.dir_arg);
+			sprintf(outputDir, "%s", args_info.dir_arg);
+		}else{
+			// adds a date to the directory name
+			sprintf(outputDir, "%s%s", args_info.dir_arg, currentDate);
+		}		
+		
 		createDirectory(outputDir);
 	} else {
 		sprintf(outputDir, "%s", args_info.dir_arg);
@@ -117,22 +113,28 @@ int main(int argc, char **argv)
 	templateHashtable = tabela_criar(10, NULL);
 	headerHashtable = tabela_criar(10, NULL);
 
-
-
 	if (args_info.proto_given) {
-		strcpy(templateName, TEMPLATE2);	
+		strcpy(templateName, CU_PROTO_TEMPLATE);	
 		parseGivenName(args_info.proto_arg);
-		fill_prototype_template_hashtable(templateHashtable, args_info.proto_arg, filename, currentDate);
+		fill_cu_proto_template_hashtable(templateHashtable, args_info.proto_arg, filename, currentDate);
 				
 		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
 		fill_header_template_hashtable(headerHashtable, filename, capitalFilename, currentDate);
 		
 		strcat(fileType, ".cu");
+		
+	}else if(args_info.regular_code_given){
+		strcpy(templateName, C_MAIN_TEMPLATE);
+		fill_c_main_template_hashtable(templateHashtable, filename, currentDate);
+		
+		strcpy(headerTemplateName, C_HEADER_TEMPLATE);
+		fill_header_template_hashtable(headerHashtable, filename, capitalFilename, currentDate);
+		
+		strcat(fileType, ".c");
+		
 	}else{
-		strcpy(templateName, TEMPLATE1);
-		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
-		fill_default_template_hashtable(templateHashtable, &grid_dim, &block_dim);
-		strcat(fileType, ".cu");
+		strcpy(templateName, CU_MAIN_TEMPLATE);
+		fill_cu_main_template_hashtable(templateHashtable, &grid_dim, &block_dim);
 		
 		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
 		fill_header_template_hashtable(headerHashtable, filename, capitalFilename, currentDate);
@@ -142,7 +144,6 @@ int main(int argc, char **argv)
 	
 	
 	//reads the template from file
-	printf("%s\n", templateName);
 	template = fileToString(templateName);
 	template = replace_string_with_template_variables(template, templateHashtable);
 	
@@ -152,17 +153,12 @@ int main(int argc, char **argv)
 	
 	
 	//reads the template from file
-	printf("%s\n", headerTemplateName);
 	headerTemplate = fileToString(headerTemplateName);
 	headerTemplate = replace_string_with_template_variables(headerTemplate, headerHashtable);
 	
 	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, ".h");
 	stringToFile(fullPath, headerTemplate);
-	
-
-
-
-	
+		
 	free(currentDate);
 	free(template);
 	free(headerTemplate);
