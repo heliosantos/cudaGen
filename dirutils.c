@@ -27,6 +27,7 @@ bool directoryExists(char *directory)
 		return TRUE;
 }
 
+
 bool createDirectory(char *directory)
 {
 	if (!directoryExists(directory)) {
@@ -37,6 +38,7 @@ bool createDirectory(char *directory)
 
 	return FALSE;
 }
+
 
  char *getDateTime(void)
 {

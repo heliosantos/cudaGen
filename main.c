@@ -143,29 +143,30 @@ int main(int argc, char **argv)
 	numOfThreads = threads.x * threads.y * threads.z;
 	
 	
-	
 	//reads the output directory
-	outputDir = args_info.dir_arg;
 	
-	if (!createDirectory(outputDir)) {
+	if (!createDirectory(args_info.dir_arg)) {
 		char *append = getDateTime();
-		char *newName = (char *)malloc(strlen(outputDir) + strlen(append) + 1);
+		outputDir = (char *)malloc(strlen(args_info.dir_arg) + strlen(append) + 1);
 
-		sprintf(newName,"%s%s", outputDir, append);
-		createDirectory(newName);
-		outputDir = newName;
+		sprintf(outputDir,"%s%s", args_info.dir_arg, append);
+		createDirectory(outputDir);
 
 		free(append);
 		append=NULL;
+	}else{
+		outputDir = malloc(strlen(args_info.dir_arg) + 1);
+		sprintf(outputDir, "%s", args_info.dir_arg);
 	}
-
 
 	/**
      * end capture an processe of input parameters
      */
 
 	//creates hashtable where the key is a template tag to be replace by the key's value
+	
 	tabela = tabela_criar(10, NULL);
+	
 	//insert key-value into hashtable
 	tabela_inserir
 	    (tabela,
@@ -208,14 +209,14 @@ int main(int argc, char **argv)
 	//reads the template
 	template = fileToString(TEMPLATE1);
 	//a list containing all keys of hashtable
+	
 	keys = tabela_criar_lista_chaves(tabela);
 	//iterater for the list of keys
 	iterador = lista_criar_iterador(keys);
 	//for each key, replaces the key in the template for its value
 
 	char *it;
-	while ((it = (char *)
-		iterador_proximo_elemento(iterador)) != NULL) {
+	while ((it = (char *) iterador_proximo_elemento(iterador)) != NULL) {
 		char *temp;
 		temp = str_replace(template, it, (char *)
 				   tabela_consultar(tabela, it));
