@@ -19,11 +19,12 @@ typedef int bool;
 
 int remove_directory(const char *path);
 bool directoryExists(char *directory);
+void rmkdir(char *directory);
 bool createDirectory(char *directory);
 char *getDateTime(void);
-char *parseGivenName(char *givenName);
+void parseGivenName(char *givenName);
 void writeStringToFile(FILE* file, char *string);
-char *getFilenameFromPath(char *path);
+void getFilenameFromPath(char *path, char *filename);
 
 
 #endif

@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include <ctype.h>
 
 #include "main.h"
 #include "dirutils.h"
@@ -18,6 +20,10 @@
 
 #define MAIN_FILE "main.cu"
 #define TEMPLATE1 "templates/CudaTemplate.cu"
+#define TEMPLATE2 "templates/CudaTemplate_P.cu"
+
+#define C_HEADER_TEMPLATE "templates/CHeaderTemplate.h"
+#define CU_HEADER_TEMPLATE "templates/CuHeaderTemplate.h"
 
 int main(int argc, char **argv)
 {
@@ -27,28 +33,31 @@ int main(int argc, char **argv)
 	Coords3D block_dim;
 
 	int numOfBlocks = 0, numOfThreads = 0;
-	char *outputDir = ".";
-	char *filename = "";
-	char *kernelName = "DefaultKernel";
-
-	HASHTABLE_T *tabela;
-	LISTA_GENERICA_T *keys;
-	ITERADOR_T *iterador;
-
+	
+	char outputDir[PATH_MAX] = "";
+	char filename[PATH_MAX] = "";
+	char capitalFilename[PATH_MAX] = "";
+	char fullPath[PATH_MAX] = "";
+	char templateName[PATH_MAX] = "";
+	char headerTemplateName[PATH_MAX] = "";
+	char fileType[4] = "";
+	
+	HASHTABLE_T *templateHashtable;
+	HASHTABLE_T *headerHashtable;
+	
 	char *template;
+	char *headerTemplate;
+	
+	unsigned int i = 0;
+	
 
 	int hasOpt = FALSE;
-	int cudaTemplate = FALSE;
 	int cTemplate = FALSE;
-	int cudaTemplateOnlyKernelDefinition = FALSE;
-
 	int forceByDefault = FALSE;
 
-	char *dirname;
-	char *path = NULL;
-	char *kernelProto;
 
-	int isValidFlag = 0;
+	
+	char *currentDate = getDateTime();
 
 	// parse input parameters
 	if (cmdline_parser(argc, argv, &args_info) != 0)
@@ -57,86 +66,110 @@ int main(int argc, char **argv)
 	if (args_info.about_given) {
 		return 0;
 	}
-
+	//TODO
 	if (args_info.Force_given) {
 		forceByDefault = TRUE;
 	}
 
+	//TODO
 	if (args_info.regular_code_given) {
 		cTemplate = TRUE;
 		hasOpt = TRUE;
 	}
 
-	if (args_info.proto_given) {
-		cudaTemplate = TRUE;
-		kernelProto = parseGivenName(args_info.proto_arg);
-		cudaTemplateOnlyKernelDefinition = TRUE;
-		hasOpt = TRUE;
+	//fills the grid dimension
+	if(args_info.blocks_given){
+		numOfBlocks = fill_grid_dim(&grid_dim, &args_info);
+	}
+	//fills the blocks dimension
+	if(args_info.threads_given){
+		numOfThreads = fill_grid_dim(&block_dim, &args_info);
 	}
 	
-	//fills the grid dimension
-	numOfBlocks = fill_grid_dim(&grid_dim, &args_info);
-	//fills the blocks dimension
-	numOfThreads = fill_grid_dim(&block_dim, &args_info);
-
 	//get filename from path
-	filename = getFilenameFromPath(args_info.dir_arg);
+	getFilenameFromPath(args_info.dir_arg, filename);
 	
 	
+	for(i = 0; i < strlen(filename); i++){
+		capitalFilename[i] = toupper(filename[i]);
+	}
+	capitalFilename[i] = 0;
+	
+	
+	
+	// and removes the / character
+	if(args_info.dir_arg[strlen(args_info.dir_arg)-1]=='/')
+		args_info.dir_arg[strlen(args_info.dir_arg) - 1] = 0;
+		printf("%s\n", args_info.dir_arg);
+		
 	//creates the output directory
 	if (!createDirectory(args_info.dir_arg)) {
-		char *append = getDateTime();
-		outputDir =
-		    (char *)malloc(strlen(args_info.dir_arg) + strlen(append) +
-				   1);
 
-		sprintf(outputDir, "%s%s", args_info.dir_arg, append);
+		sprintf(outputDir, "%s%s", args_info.dir_arg, currentDate);
 		createDirectory(outputDir);
-
-		free(append);
-		append = NULL;
 	} else {
-		outputDir = malloc(strlen(args_info.dir_arg) + 1 + 3);
 		sprintf(outputDir, "%s", args_info.dir_arg);
 	}
-
+		
+	sprintf(outputDir,"%s/", outputDir);
+		
 	//creates hashtable where the key is a template tag to be replace by the key's value
-	tabela = tabela_criar(10, NULL);
+	templateHashtable = tabela_criar(10, NULL);
+	headerHashtable = tabela_criar(10, NULL);
 
-	fill_default_template_list(tabela, &grid_dim, &block_dim);
 
-	//reads the template from file
-	template = fileToString(TEMPLATE1);
 
-	//a list containing all keys of hashtable
-	keys = tabela_criar_lista_chaves(tabela);
-
-	//iterator for the list of keys
-	iterador = lista_criar_iterador(keys);
-
-	//for each key, replaces the key in the template for its value
-	char *it;
-	while ((it = (char *)iterador_proximo_elemento(iterador)) != NULL) {
-		char *temp;
-		temp = str_replace(template, it, (char *)
-				   tabela_consultar(tabela, it));
-		free(template);
-		template = temp;
+	if (args_info.proto_given) {
+		strcpy(templateName, TEMPLATE2);	
+		parseGivenName(args_info.proto_arg);
+		fill_prototype_template_hashtable(templateHashtable, args_info.proto_arg, filename, currentDate);
+				
+		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
+		fill_header_template_hashtable(headerHashtable, filename, capitalFilename, currentDate);
+		
+		strcat(fileType, ".cu");
+	}else{
+		strcpy(templateName, TEMPLATE1);
+		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
+		fill_default_template_hashtable(templateHashtable, &grid_dim, &block_dim);
+		strcat(fileType, ".cu");
+		
+		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
+		fill_header_template_hashtable(headerHashtable, filename, capitalFilename, currentDate);
+		
+		strcat(fileType, ".cu");
 	}
+	
+	
+	//reads the template from file
+	printf("%s\n", templateName);
+	template = fileToString(templateName);
+	template = replace_string_with_template_variables(template, templateHashtable);
+	
+	
+	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, fileType);
+	stringToFile(fullPath, template);
+	
+	
+	//reads the template from file
+	printf("%s\n", headerTemplateName);
+	headerTemplate = fileToString(headerTemplateName);
+	headerTemplate = replace_string_with_template_variables(headerTemplate, headerHashtable);
+	
+	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, ".h");
+	stringToFile(fullPath, headerTemplate);
+	
 
-	//	printf("%s", template);
-	printf("output dir: %s\nfilename: %s\n", outputDir, filename);
+
+
 	
-	
-	
-	free(filename);
-	free(outputDir);
+	free(currentDate);
 	free(template);
+	free(headerTemplate);
 	//free gengetopt
 	cmdline_parser_free(&args_info);
-	iterador_destruir(&iterador);
-	lista_destruir(&keys);
-	tabela_destruir(&tabela);
+	tabela_destruir(&templateHashtable);
+	tabela_destruir(&headerHashtable);
 	return 0;
 }
 
@@ -146,8 +179,12 @@ char *fileToString(char *fileName)
 	long f_size;
 	char *code;
 	size_t code_s;
-	FILE *fp = fopen(fileName,
-			 "r");
+	FILE *fp = NULL;
+	
+	if((fp = fopen(fileName, "r")) == NULL){
+		ERROR(3,"Can't open file to read");
+	}
+	
 	fseek(fp, 0, SEEK_END);
 	f_size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
@@ -278,40 +315,12 @@ int fill_block_dim(Coords3D * block_dim, struct gengetopt_args_info *args_info)
 	return block_dim->x * block_dim->y * block_dim->z;
 }
 
-void fill_default_template_list(HASHTABLE_T * tabela, Coords3D * grid_dim,
-				Coords3D * block_dim)
-{
-//insert key-value into hashtable
-	tabela_inserir
-	    (tabela,
-	     "$DECLARE_TIMER$",
-	     "cudaEvent_t start, stop;\n" "\tfloat elapsedTime;");
-	tabela_inserir(tabela, "$CREATE_TIMER$",
-		       "/* create the timers */\n"
-		       "\tHANDLE_ERROR(cudaEventCreate(&start));\n"
-		       "\tHANDLE_ERROR(cudaEventCreate(&stop));\n"
-		       "\t/* start the timer */\n"
-		       "\tHANDLE_ERROR(cudaEventRecord(start, 0));");
-	tabela_inserir(tabela, "$TERMINATE_TIMER$",
-		       "HANDLE_ERROR(cudaEventRecord(stop, 0));\n"
-		       "\tcudaEventSynchronize(stop);\n"
-		       "\tHANDLE_ERROR(cudaEventElapsedTime(&elapsedTime, start, stop));\n"
-		       "\tprintf(\"execution took %3.6f miliseconds\", elapsedTime);");
-	tabela_inserir(tabela, "$FREE_TIMER$",
-		       "HANDLE_ERROR(cudaEventDestroy(start));\n"
-		       "\tHANDLE_ERROR(cudaEventDestroy(stop));");
-
-	tabela_inserir(tabela, "$BX$", grid_dim->sx);
-
-	tabela_inserir(tabela, "$BY$", grid_dim->sy);
-
-	tabela_inserir(tabela, "$BZ$", grid_dim->sz);
-
-	tabela_inserir(tabela, "$TX$", block_dim->sx);
-
-	tabela_inserir(tabela, "$TY$", block_dim->sy);
-
-	tabela_inserir(tabela, "$TZ$", block_dim->sz);
-
-	//end insert key-value into hashtable
+void stringToFile(char *filename, char *string){
+	FILE *fptr = NULL;
+	if ((fptr = fopen(filename, "w")) == NULL){
+		ERROR(3, "Can't open file to write");
+	}
+	fprintf(fptr, "%s", string);
+	fclose(fptr);
 }
+

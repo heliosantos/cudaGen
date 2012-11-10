@@ -5,12 +5,27 @@
 * @author 2120912@my.ipleiria.pt
 */
 
-#ifndef __templateGen_H
-#define __templateGen_H
+#ifndef __TEMPLATEGEN_H
+#define __TEMPLATEGEN_H
 
-void createHeaderTemplate(char *dirname, char *path);
-void generateStaticTemplate(char *dirname, char *path, int cudaTemplateByDefault, char *kernelProto);
-int createErrorFile(char *path);
-void createDirectoryAndHeaderFile(int force, char *dirname, char **path);
+#include "3rdParty/hashtables.h"
+
+typedef struct Coords3D_s {
+	int x;
+	int y;
+	int z;
+	char sx[6];
+	char sy[6];
+	char sz[6];
+} Coords3D;
+
+
+void fill_default_template_hashtable(HASHTABLE_T *tabela, Coords3D *grid_dim, Coords3D *block_dim);
+
+void fill_prototype_template_hashtable(HASHTABLE_T * tabela, char *kernelName, char *filename, char *currentDate);
+
+void fill_header_template_hashtable(HASHTABLE_T * tabela, char *filename, char *capitalFilename, char *currentDate);
+
+char *replace_string_with_template_variables(char *template, HASHTABLE_T * tabela);
 
 #endif

@@ -15,6 +15,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "dirutils.h"
 #include "3rdParty/debug.h"
@@ -32,6 +33,35 @@ bool directoryExists(char *directory)
 }
 
 /**
+ * Create a directory tree (recursive mkdir)
+ *
+ * @param directory directory name to be created
+ * @return nothing
+ * @see http://nion.modprobe.de/blog/archives/357-Recursive-directory-creation.html
+ */
+void rmkdir(char *directory)
+{
+    char tmp[PATH_MAX];
+    char *p = NULL;
+    size_t len;
+    
+    snprintf(tmp, sizeof(tmp), "%s", directory);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/')
+        tmp[len - 1] = 0;
+    for (p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = 0;
+            // S_IRWXU = 00700 -> mask for file owner permissions (from man 2 stat)
+            mkdir(tmp, S_IRWXU);
+            *p = '/';
+        }
+    }
+    mkdir(tmp, S_IRWXU);
+}
+
+
+/**
  * Function to check if directory exists
  *
  * @param dirname directory name to be created
@@ -41,7 +71,7 @@ bool directoryExists(char *directory)
 bool createDirectory(char *directory)
 {
 	if (!directoryExists(directory)) {
-		mkdir(directory, 0700);
+		rmkdir(directory);
 
 		return TRUE;
 	}
@@ -69,21 +99,17 @@ char *getDateTime(void)
  * Function to prevent white spaces in directory name string
  *
  * @param givenName directory name to be parsed
- * @return parsed directory name
+ * @return void
  * @see 
  */
-char *parseGivenName(char *givenName)
+void parseGivenName(char *givenName)
 {
-	char *aux = givenName;
-	unsigned int i;
-
-	for (i = 0; i < strlen(aux); i++) {
-		if (aux[i] == ' ') {
-			aux[i] = '_';
+	unsigned int i = 0;
+	for (; i < strlen(givenName); i++) {
+		if (givenName[i] == ' ') {
+			givenName[i] = '_';
 		}
 	}
-
-	return aux;
 }
 
 /**
@@ -155,19 +181,19 @@ int remove_directory(const char *path)
 *
 *	return the filename or the name of the last directory
 */
-char *getFilenameFromPath(char *path){
+void getFilenameFromPath(char *path, char *filename){
 	
-	char *result = NULL, *filename = NULL, *temp = NULL;	
+	char *result = NULL;
+	char *temp = NULL;
+	char pathCopy[PATH_MAX] = "";	
 	
-	temp = malloc(strlen(path) + 4);
-	strcpy(temp, path);
+	strcpy(pathCopy, path);
 	
-	result = strtok(temp, "/");
+	result = strtok(pathCopy, "/");
 	while(result != NULL){
-		filename = result;
+		temp = result;
 		result = strtok(NULL, "/");
 	}
-	strcpy(temp, filename);
-	return temp;
+	strcpy(filename, temp);
 }
 
