@@ -22,5 +22,8 @@ bool directoryExists(char *directory);
 bool createDirectory(char *directory);
 char *getDateTime(void);
 char *parseGivenName(char *givenName);
+void writeStringToFile(FILE* file, char *string);
+char *getFilenameFromPath(char *path);
+
 
 #endif

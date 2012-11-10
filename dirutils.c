@@ -22,13 +22,13 @@
 bool directoryExists(char *directory)
 {
 	struct stat st;
-	
+
 	//memset(&st, 0, sizeof(st));
 
-	if (stat(directory, &st) == -1)
-		return FALSE
-		else
+	if (stat(directory, &st) == -1) {
+	return FALSE} else {
 		return TRUE;
+	}
 }
 
 /**
@@ -49,8 +49,7 @@ bool createDirectory(char *directory)
 	return FALSE;
 }
 
-
- char *getDateTime(void)
+char *getDateTime(void)
 {
 	time_t now;
 	struct tm *t;
@@ -62,7 +61,7 @@ bool createDirectory(char *directory)
 	t = localtime(&now);
 	strftime(str, 25, "%Y.%m.%d---%Hh%Mm%Ss", t);
 	// YYYY.MM.DD---HHhMM.SSs
-	
+
 	return str;
 }
 
@@ -75,20 +74,17 @@ bool createDirectory(char *directory)
  */
 char *parseGivenName(char *givenName)
 {
-  char *aux = givenName;
-  unsigned int i;
-  
-  for(i = 0; i < strlen(aux);i++)
-  {
-    if(aux[i] == ' ')
-    {
-      aux[i] = '_';
-    }
-  }
-  
-  return aux;
-}
+	char *aux = givenName;
+	unsigned int i;
 
+	for (i = 0; i < strlen(aux); i++) {
+		if (aux[i] == ' ') {
+			aux[i] = '_';
+		}
+	}
+
+	return aux;
+}
 
 /**
  * Function to remove directory if exists
@@ -100,68 +96,78 @@ char *parseGivenName(char *givenName)
  */
 int remove_directory(const char *path)
 {
-   DIR *d;
-   
-   if ((d = opendir(path)) == NULL)
-    ERROR(4,"Can't open dir to write");
-   
-   size_t path_len = strlen(path);
-   int r = -1;
+	DIR *d;
 
-   if (d)
-   {
-      struct dirent *p;
+	if ((d = opendir(path)) == NULL)
+		ERROR(4, "Can't open dir to write");
 
-      r = 0;
+	size_t path_len = strlen(path);
+	int r = -1;
 
-      while (!r && (p=readdir(d)))
-      {
-          int r2 = -1;
-          char *buf;
-          size_t len;
+	if (d) {
+		struct dirent *p;
 
-          /* Skip the names "." and ".." as we don't want to recurse on them. */
-          if (!strcmp(p->d_name, ".") || !strcmp(p->d_name, ".."))
-          {
-             continue;
-          }
+		r = 0;
 
-          len = path_len + strlen(p->d_name) + 2; 
-          buf = malloc(len);
+		while (!r && (p = readdir(d))) {
+			int r2 = -1;
+			char *buf;
+			size_t len;
 
-          if (buf)
-          {
-             struct stat statbuf;
+			/* Skip the names "." and ".." as we don't want to recurse on them. */
+			if (!strcmp(p->d_name, ".") || !strcmp(p->d_name, "..")) {
+				continue;
+			}
 
-             snprintf(buf, len, "%s/%s", path, p->d_name);
+			len = path_len + strlen(p->d_name) + 2;
+			buf = malloc(len);
 
-             if (!stat(buf, &statbuf))
-             {
-                if (S_ISDIR(statbuf.st_mode))
-                {
-                   r2 = remove_directory(buf);
-                }
-                else
-                {
-                   r2 = unlink(buf);
-                }
-             }
+			if (buf) {
+				struct stat statbuf;
 
-             free(buf);
-          }
+				snprintf(buf, len, "%s/%s", path, p->d_name);
 
-          r = r2;
-      }
+				if (!stat(buf, &statbuf)) {
+					if (S_ISDIR(statbuf.st_mode)) {
+						r2 = remove_directory(buf);
+					} else {
+						r2 = unlink(buf);
+					}
+				}
 
-      closedir(d);
-   }
+				free(buf);
+			}
 
-   if (!r)
-   {
-      r = rmdir(path);
-   }
+			r = r2;
+		}
 
-   return r;
+		closedir(d);
+	}
+
+	if (!r) {
+		r = rmdir(path);
+	}
+
+	return r;
 }
 
+/**
+*
+*	return the filename or the name of the last directory
+*/
+char *getFilenameFromPath(char *path){
+	
+	char *result = NULL, *filename = NULL, *temp = NULL;	
+	
+	temp = malloc(strlen(path) + 4);
+	strcpy(temp, path);
+	
+	result = strtok(temp, "/");
+	while(result != NULL){
+		filename = result;
+		result = strtok(NULL, "/");
+	}
+	strcpy(temp, filename);
+	return temp;
+}
 
