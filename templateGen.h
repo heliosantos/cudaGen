@@ -23,8 +23,12 @@ void fill_system_vars_hashtable(HASHTABLE_T *table, char *currentDate, Coords3D 
 
 void fill_file_vars_hashtable(HASHTABLE_T *table, char *unparsedVars);
 
-char *replace_string_with_template_variables(char *template, HASHTABLE_T *table);
+char *replace_string_with_hashtable_variables(char *template, HASHTABLE_T *table);
 
-void freeString(char *str);
+void free_string(char *str);
+
+void free_matched_vars_from_hashtable(HASHTABLE_T *table, LISTA_GENERICA_T *var_list);
+
+int list_compare_elements(char *str1, char *str2);
 
 #endif

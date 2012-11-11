@@ -77,7 +77,7 @@ void fill_system_vars_hashtable(HASHTABLE_T * table, char *currentDate, Coords3D
 	tabela_inserir(table, "$!USER_NAME!$", userName);
 }
 
-char *replace_string_with_template_variables(char *template, HASHTABLE_T * table){
+char *replace_string_with_hashtable_variables(char *template, HASHTABLE_T * table){
 
 	LISTA_GENERICA_T *keys;
 	ITERADOR_T *iterador;
@@ -103,7 +103,42 @@ char *replace_string_with_template_variables(char *template, HASHTABLE_T * table
 	return template;
 }
 
-void freeString(char *str){
+void free_string(char *str){
 	free(str);
+}
+
+void free_matched_vars_from_hashtable(HASHTABLE_T *table, LISTA_GENERICA_T *var_list){
+	LISTA_GENERICA_T *keys;
+	ITERADOR_T *iterador;
+
+	//a list containing all keys of hashtable
+	keys = tabela_criar_lista_chaves(table);
+
+	//iterator for the list of keys
+	iterador = lista_criar_iterador(keys);
+
+	//for each key, replaces the mathched value by a empty string
+	char *it;
+	while ((it = (char *)iterador_proximo_elemento(iterador)) != NULL) {
+		
+		char *found = (char*)lista_pesquisar(var_list, it, (COMPARAR_FUNC) list_compare_elements);
+		if(found != NULL){
+			char *value = (char *) tabela_consultar(table, it);			
+			value[0] = 0;
+		}		
+	}
+	iterador_destruir(&iterador);
+	lista_destruir(&keys);	
+}
+
+int list_compare_elements(char *str1, char *str2){
+	printf("does %s matches %s ?", str1, str2);
+
+	if(strstr(str1, str2) != NULL){
+		printf(" yes\n");	
+		return 0;				
+	}
+	printf(" no\n");
+	return 1;
 }
 
