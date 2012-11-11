@@ -58,7 +58,6 @@ int main(int argc, char **argv)
 	char fullPath[PATH_MAX] = "";	
 	char fileType[4] = "";
 	
-	
 	char mainTemplateName[PATH_MAX] = "";
 	char headerTemplateName[PATH_MAX] = "";
 	char makefileTemplateName[PATH_MAX] = "";
@@ -71,25 +70,24 @@ int main(int argc, char **argv)
 	char *kernelProto = NULL;
 	char *fileVars = NULL;
 	
-	HASHTABLE_T *systemTable;
-	HASHTABLE_T *fileVarTable;
-	
+	HASHTABLE_T *systemVarsTable;
+	HASHTABLE_T *fileVarsTable;
+	HASHTABLE_T *ignoreVarsTable;
 	
 	char *template;
-	
 	unsigned int i = 0;
-	
-
 	char *currentDate = getDateTime();
 
 	// parse input parameters
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
 
+	// --about
 	if (args_info.about_given) {
 		return 0;
 	}
 	
+	// --proto
 	if (args_info.proto_given) {
 		kernelProto = malloc(strlen(args_info.proto_arg) + 1);
 		strcpy(kernelProto, args_info.proto_arg);
@@ -99,15 +97,17 @@ int main(int argc, char **argv)
 		strcpy(kernelProto,"");	
 	}
 
-	//fills the grid dimension (--blocs option)
+	// --blocs
 	if(args_info.blocks_given){
 		numOfBlocks = fill_grid_dim(&grid_dim, &args_info);
 	}
-	//fills the blocks dimension (--threads option)
+	
+	// --threads
 	if(args_info.threads_given){
 		numOfThreads = fill_block_dim(&block_dim, &args_info);
 	}
 	
+	// --dir
 	// get filename from path (the name of the last directory)
 	getFilenameFromPath(args_info.dir_arg, filename);
 	
@@ -142,13 +142,14 @@ int main(int argc, char **argv)
 	sprintf(outputDir,"%s/", outputDir);
 		
 		
-	//creates an hashtable with program generated template variables
-	systemTable = tabela_criar(11, NULL);
-	fill_system_vars_hashtable(systemTable, currentDate, &grid_dim, &block_dim, filename, capitalFilename, kernelProto, userName);	
+	//creates an hashtable with system generated template variables
+	systemVarsTable = tabela_criar(11, NULL);
+	fill_system_vars_hashtable(systemVarsTable, currentDate, &grid_dim, &block_dim, filename, capitalFilename, kernelProto, userName);	
 	
 			
+	/* defines which templates to use */
 	
-
+	// cuda with prototype
 	if (args_info.proto_given) {
 		strcpy(mainTemplateName, CU_PROTO_TEMPLATE);
 	
@@ -163,7 +164,8 @@ int main(int argc, char **argv)
 		strcpy(fileVarMakefileTemplateName, CU_MAKEFILE_TEMPLATE_VARS);
 		
 		strcat(fileType, ".cu");
-		
+	
+	// regular c template	
 	}else if(args_info.regular_code_given){
 		strcpy(mainTemplateName, C_MAIN_TEMPLATE);
 	
@@ -178,7 +180,8 @@ int main(int argc, char **argv)
 		strcpy(fileVarMakefileTemplateName, C_MAKEFILE_TEMPLATE_VARS);
 		
 		strcat(fileType, ".c");
-		
+	
+	// cuda default
 	}else{
 		strcpy(mainTemplateName, CU_MAIN_TEMPLATE);
 	
@@ -202,16 +205,15 @@ int main(int argc, char **argv)
 	template = fileToString(mainTemplateName);
 	// get the file vars for template
 	fileVars = fileToString(fileVarMainTemplateName);		
-	// create a table 
-	fileVarTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
-	// save vars from file to table
-	fill_file_vars_hashtable(fileVarTable, fileVars);
+	// creates an hastable containing the file vars 
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	fill_file_vars_hashtable(fileVarsTable, fileVars);
 	free(fileVars);		
 	// update the template with vars from file
-	template = replace_string_with_template_multiline_variables(template, fileVarTable);
-	tabela_destruir(&fileVarTable);
+	template = replace_string_with_template_multiline_variables(template, fileVarsTable);
+	tabela_destruir(&fileVarsTable);
 	// update the Main template with system variablese
-	template = replace_string_with_template_variables(template, systemTable);	
+	template = replace_string_with_template_variables(template, systemVarsTable);	
 	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, fileType);
 	stringToFile(fullPath, template);
@@ -224,16 +226,15 @@ int main(int argc, char **argv)
 	template = fileToString(headerTemplateName);
 	// get the file vars for template
 	fileVars = fileToString(fileVarHeaderTemplateName);		
-	// create a table 
-	fileVarTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
-	// save vars from file to table
-	fill_file_vars_hashtable(fileVarTable, fileVars);
+	// creates an hastable containing the file vars 
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	fill_file_vars_hashtable(fileVarsTable, fileVars);
 	free(fileVars);		
 	// update the template with vars from file
-	template = replace_string_with_template_multiline_variables(template, fileVarTable);
-	tabela_destruir(&fileVarTable);
+	template = replace_string_with_template_multiline_variables(template, fileVarsTable);
+	tabela_destruir(&fileVarsTable);
 	// update the template with system variablese
-	template = replace_string_with_template_variables(template, systemTable);	
+	template = replace_string_with_template_variables(template, systemVarsTable);	
 	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, ".h");
 	stringToFile(fullPath, template);
@@ -245,16 +246,15 @@ int main(int argc, char **argv)
 	template = fileToString(makefileTemplateName);
 	// get the file vars for template
 	fileVars = fileToString(fileVarMakefileTemplateName);		
-	// create a table 
-	fileVarTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
-	// save vars from file to table
-	fill_file_vars_hashtable(fileVarTable, fileVars);
+	// creates an hastable containing the file vars 
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	fill_file_vars_hashtable(fileVarsTable, fileVars);
 	free(fileVars);		
 	// update the template with vars from file
-	template = replace_string_with_template_multiline_variables(template, fileVarTable);
-	tabela_destruir(&fileVarTable);
+	template = replace_string_with_template_multiline_variables(template, fileVarsTable);
+	tabela_destruir(&fileVarsTable);
 	// update the template with system variablese
-	template = replace_string_with_template_variables(template, systemTable);	
+	template = replace_string_with_template_variables(template, systemVarsTable);	
 	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s", outputDir, MAKEFILE_NAME);
 	stringToFile(fullPath, template);
@@ -264,14 +264,19 @@ int main(int argc, char **argv)
 		
 	free(kernelProto);	
 	free(currentDate);
-	//free gengetopt
-	cmdline_parser_free(&args_info);
+	cmdline_parser_free(&args_info);	
+	tabela_destruir(&systemVarsTable);
 	
-	tabela_destruir(&systemTable);
 	return 0;
 }
 
-//http://stackoverflow.com/questions/1285097/how-to-copy-text-file-to-string-in-c
+/**
+*
+* Stores a file in a string
+*
+*http://stackoverflow.com/questions/1285097/how-to-copy-text-file-to-string-in-c
+*
+*/
 char *fileToString(char *fileName)
 {
 	long f_size;
@@ -294,7 +299,14 @@ char *fileToString(char *fileName)
 	return code;
 }
 
-//http://stackoverflow.com/questions/3659694/how-to-replace-substring-in-c
+
+/**
+*
+* Replaces all occurences of string A by string B on string C
+*
+*http://stackoverflow.com/questions/3659694/how-to-replace-substring-in-c
+*
+*/
 char *str_replace(const char *s, const char *old, const char *new)
 {
 	size_t slen = strlen(s) + 1;
@@ -413,6 +425,11 @@ int fill_block_dim(Coords3D * block_dim, struct gengetopt_args_info *args_info)
 	return block_dim->x * block_dim->y * block_dim->z;
 }
 
+/**
+*
+* Stores a string in a file
+*
+*/
 void stringToFile(char *filename, char *string){
 	FILE *fptr = NULL;
 	if ((fptr = fopen(filename, "w")) == NULL){
