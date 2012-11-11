@@ -39,6 +39,9 @@
 #define CU_MAKEFILE_TEMPLATE_VARS "templates/CuMakefileTemplateVars.make"
 #define CU_PROTO_TEMPLATE_VARS "templates/CuProtoTemplateVars.cu"
 
+#define HANDLE_ERROR_H "templates/HandleError.h"
+#define HANDLE_ERROR_H_NAME "HandleError.h"
+
 #define MAKEFILE_NAME "makefile"
 
 
@@ -145,7 +148,7 @@ int main(int argc, char **argv)
 	
 	varsIgnoreList = lista_criar((LIBERTAR_FUNC)free_string);
 	
-	if(args_info.measure_given){
+	if(!args_info.measure_given){
 		char *var = malloc(strlen("MEASURE") + 1);
 		strcpy(var, "MEASURE");		
 		lista_inserir(varsIgnoreList, var);
@@ -207,6 +210,17 @@ int main(int argc, char **argv)
 		strcpy(fileVarMakefileTemplateName, CU_MAKEFILE_TEMPLATE_VARS);
 		
 		strcat(fileType, ".cu");
+		
+	}
+	
+	// create HANDLE_ERROR_H file
+	if(strcmp(fileType,".cu") == 0){
+		// reads from source file
+		template = fileToString(HANDLE_ERROR_H);
+		// writes to destination file
+		snprintf(fullPath, PATH_MAX, "%s%s", outputDir, HANDLE_ERROR_H_NAME);
+		stringToFile(fullPath, template);
+		free(template);
 	}
 	
 	
@@ -222,8 +236,7 @@ int main(int argc, char **argv)
 	free(fileVars);	
 	// clear the vars to ignore
 	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
-	
-		
+			
 	// update the template with vars from file
 	template = replace_string_with_hashtable_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
@@ -245,6 +258,9 @@ int main(int argc, char **argv)
 	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)free_string);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
 	free(fileVars);		
+	// clear the vars to ignore
+	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
+	
 	// update the template with vars from file
 	template = replace_string_with_hashtable_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
@@ -265,6 +281,9 @@ int main(int argc, char **argv)
 	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)free_string);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
 	free(fileVars);		
+	// clear the vars to ignore
+	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
+	
 	// update the template with vars from file
 	template = replace_string_with_hashtable_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
