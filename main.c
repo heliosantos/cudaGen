@@ -18,6 +18,7 @@
 #include "cmdline.h"
 #include "3rdParty/debug.h"
 #include "3rdParty/listas.h"
+#include "utils.h"
 
 #define MAIN_FILE "main.cu"
 
@@ -44,7 +45,6 @@
 
 #define MAKEFILE_NAME "makefile"
 
-
 #define MAX_KNAME 256
 
 int main(int argc, char **argv)
@@ -52,360 +52,313 @@ int main(int argc, char **argv)
 	struct gengetopt_args_info args_info;
 
 	Coords3D grid_dim;
-	Coords3D block_dim;	
-	
+	Coords3D block_dim;
+
 	int numOfBlocks = 0, numOfThreads = 0;
-	
+
 	char outputDir[PATH_MAX] = "";
 	char filename[PATH_MAX] = "";
 	char capitalFilename[PATH_MAX] = "";
-	char fullPath[PATH_MAX] = "";	
+	char fullPath[PATH_MAX] = "";
 	char fileType[4] = "";
-	
+
 	char mainTemplateName[PATH_MAX] = "";
 	char headerTemplateName[PATH_MAX] = "";
 	char makefileTemplateName[PATH_MAX] = "";
-	
+
 	char fileVarMainTemplateName[PATH_MAX] = "";
 	char fileVarHeaderTemplateName[PATH_MAX] = "";
-	char fileVarMakefileTemplateName[PATH_MAX] = "";	
-	
+	char fileVarMakefileTemplateName[PATH_MAX] = "";
+
 	char userName[PATH_MAX] = "your name";
 	char *kernelProto = NULL;
 	char *fileVars = NULL;
-	
+
 	HASHTABLE_T *systemVarsTable;
 	HASHTABLE_T *fileVarsTable;
 	LISTA_GENERICA_T *varsIgnoreList;
-	
-	
+
 	char *template;
 	unsigned int i = 0;
-	char *currentDate = getDateTime();
+	char *currentDate = NULL;
 
 	// parse input parameters
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
 
+	memset(&grid_dim, 0, sizeof(Coords3D));
+	strcpy(grid_dim.csvString, "1"); 
+	memset(&block_dim, 0, sizeof(Coords3D));
+	strcpy(block_dim.csvString, "1"); 
+
+	currentDate = getDateTime();
+
 	// --about
 	if (args_info.about_given) {
 		return 0;
 	}
-	
 	// --proto
 	if (args_info.proto_given) {
 		kernelProto = malloc(strlen(args_info.proto_arg) + 1);
 		strcpy(kernelProto, args_info.proto_arg);
 		parseGivenName(kernelProto);
-	}else{
+	} else {
 		kernelProto = malloc(2);
-		strcpy(kernelProto,"");	
+		strcpy(kernelProto, "");
 	}
 
 	// --blocs
-	if(args_info.blocks_given){
+	if (args_info.blocks_given) {
 		numOfBlocks = fill_grid_dim(&grid_dim, &args_info);
 	}
-	
 	// --threads
-	if(args_info.threads_given){
+	if (args_info.threads_given) {
 		numOfThreads = fill_block_dim(&block_dim, &args_info);
 	}
-	
 	// --dir
 	// get filename from path (the name of the last directory)
 	getFilenameFromPath(args_info.dir_arg, filename);
-	
+
 	// the filename in capital letters
-	for(i = 0; i < strlen(filename); i++){
+	for (i = 0; i < strlen(filename); i++) {
 		capitalFilename[i] = toupper(filename[i]);
 	}
-	capitalFilename[i] = 0;	
-	
+	capitalFilename[i] = 0;
+
 	// removes the / character
-	if(args_info.dir_arg[strlen(args_info.dir_arg)-1]=='/'){
+	if (args_info.dir_arg[strlen(args_info.dir_arg) - 1] == '/') {
 		args_info.dir_arg[strlen(args_info.dir_arg) - 1] = 0;
 	}
-		
 	//creates the output directory
 	if (!createDirectory(args_info.dir_arg)) {
-		
-		if(args_info.Force_given){
-			// removes the existing directoy	
+
+		if (args_info.Force_given) {
+			// removes the existing directoy        
 			remove_directory(args_info.dir_arg);
 			sprintf(outputDir, "%s", args_info.dir_arg);
-		}else{
+		} else {
 			// adds a date to the directory name
-			sprintf(outputDir, "%s%s", args_info.dir_arg, currentDate);
-		}		
-		
+			sprintf(outputDir, "%s%s", args_info.dir_arg,
+				currentDate);
+		}
+
 		createDirectory(outputDir);
 	} else {
 		sprintf(outputDir, "%s", args_info.dir_arg);
 	}
-		
-	sprintf(outputDir,"%s/", outputDir);
-	
-	varsIgnoreList = lista_criar((LIBERTAR_FUNC)free_string);
-	
-	if(!args_info.measure_given){
+
+	sprintf(outputDir, "%s/", outputDir);
+
+	varsIgnoreList = lista_criar((LIBERTAR_FUNC) free);
+
+	if (!args_info.measure_given) {
 		char *var = malloc(strlen("MEASURE") + 1);
-		strcpy(var, "MEASURE");		
+		strcpy(var, "MEASURE");
 		lista_inserir(varsIgnoreList, var);
-		
-	}		
-		
-		
+
+	}
 	//creates an hashtable with system generated template variables
-	systemVarsTable = tabela_criar(11, NULL);
-	fill_system_vars_hashtable(systemVarsTable, currentDate, &grid_dim, &block_dim, filename, capitalFilename, kernelProto, userName);	
-	
-			
+	systemVarsTable = tabela_criar(11, (LIBERTAR_FUNC) free);
+	fill_system_vars_hashtable(systemVarsTable, currentDate, &grid_dim,
+				   &block_dim, filename, capitalFilename,
+				   kernelProto, userName);
+
 	/* defines which templates to use */
-	
+
 	// cuda with prototype
 	if (args_info.proto_given) {
 		strcpy(mainTemplateName, CU_PROTO_TEMPLATE);
-	
+
 		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
-		
+
 		strcpy(makefileTemplateName, CU_MAKEFILE_TEMPLATE);
-		
+
 		strcpy(fileVarMainTemplateName, CU_PROTO_TEMPLATE_VARS);
-		
+
 		strcpy(fileVarHeaderTemplateName, CU_HEADER_TEMPLATE_VARS);
-		
+
 		strcpy(fileVarMakefileTemplateName, CU_MAKEFILE_TEMPLATE_VARS);
-		
+
 		strcat(fileType, ".cu");
-	
-	// regular c template	
-	}else if(args_info.regular_code_given){
+
+		// regular c template   
+	} else if (args_info.regular_code_given) {
 		strcpy(mainTemplateName, C_MAIN_TEMPLATE);
-	
+
 		strcpy(headerTemplateName, C_HEADER_TEMPLATE);
-		
+
 		strcpy(makefileTemplateName, C_MAKEFILE_TEMPLATE);
-		
+
 		strcpy(fileVarMainTemplateName, C_MAIN_TEMPLATE_VARS);
-		
+
 		strcpy(fileVarHeaderTemplateName, C_HEADER_TEMPLATE_VARS);
-		
+
 		strcpy(fileVarMakefileTemplateName, C_MAKEFILE_TEMPLATE_VARS);
-		
+
 		strcat(fileType, ".c");
-	
-	// cuda default
-	}else{
+
+		// cuda default
+	} else {
 		strcpy(mainTemplateName, CU_MAIN_TEMPLATE);
-	
+
 		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
-		
+
 		strcpy(makefileTemplateName, CU_MAKEFILE_TEMPLATE);
-		
+
 		strcpy(fileVarMainTemplateName, CU_MAIN_TEMPLATE_VARS);
-		
+
 		strcpy(fileVarHeaderTemplateName, CU_HEADER_TEMPLATE_VARS);
-		
+
 		strcpy(fileVarMakefileTemplateName, CU_MAKEFILE_TEMPLATE_VARS);
-		
+
 		strcat(fileType, ".cu");
-		
+
 	}
-	
+
 	// create HANDLE_ERROR_H file
-	if(strcmp(fileType,".cu") == 0){
+	if (strcmp(fileType, ".cu") == 0) {
 		// reads from source file
 		template = fileToString(HANDLE_ERROR_H);
 		// writes to destination file
-		snprintf(fullPath, PATH_MAX, "%s%s", outputDir, HANDLE_ERROR_H_NAME);
+		snprintf(fullPath, PATH_MAX, "%s%s", outputDir,
+			 HANDLE_ERROR_H_NAME);
 		stringToFile(fullPath, template);
 		free(template);
 	}
-	
-	
+
 	/* Create Main file */
-	
+
 	// get the template
 	template = fileToString(mainTemplateName);
 	// get the file vars for vars template
-	fileVars = fileToString(fileVarMainTemplateName);		
+	fileVars = fileToString(fileVarMainTemplateName);
 	// creates an hastable containing the file vars 
-	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)free_string);
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC) free);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
-	free(fileVars);	
+	free(fileVars);
 	// clear the vars to ignore
 	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
-			
+
 	// update the template with vars from file
-	template = replace_string_with_hashtable_variables(template, fileVarsTable);
+	template =
+	    replace_string_with_hashtable_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
 	// update the Main template with system variablese
-	template = replace_string_with_hashtable_variables(template, systemVarsTable);	
+	template =
+	    replace_string_with_hashtable_variables(template, systemVarsTable);
 	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, fileType);
 	stringToFile(fullPath, template);
 	free(template);
-	
-	
+
 	/* Create Header file */
-	
+
 	// get the header template
 	template = fileToString(headerTemplateName);
 	// get the file vars for template
-	fileVars = fileToString(fileVarHeaderTemplateName);		
+	fileVars = fileToString(fileVarHeaderTemplateName);
 	// creates an hastable containing the file vars 
-	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)free_string);
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC) free);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
-	free(fileVars);		
+	free(fileVars);
 	// clear the vars to ignore
 	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
-	
+
 	// update the template with vars from file
-	template = replace_string_with_hashtable_variables(template, fileVarsTable);
+	template =
+	    replace_string_with_hashtable_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
 	// update the template with system variablese
-	template = replace_string_with_hashtable_variables(template, systemVarsTable);	
+	template =
+	    replace_string_with_hashtable_variables(template, systemVarsTable);
 	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, ".h");
 	stringToFile(fullPath, template);
 	free(template);
-		
+
 	/* Create Make file */
-	
+
 	// get the header template
 	template = fileToString(makefileTemplateName);
 	// get the file vars for template
-	fileVars = fileToString(fileVarMakefileTemplateName);		
+	fileVars = fileToString(fileVarMakefileTemplateName);
 	// creates an hastable containing the file vars 
-	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)free_string);
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC) free);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
-	free(fileVars);		
+	free(fileVars);
 	// clear the vars to ignore
 	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
-	
+
 	// update the template with vars from file
-	template = replace_string_with_hashtable_variables(template, fileVarsTable);
+	template =
+	    replace_string_with_hashtable_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
 	// update the template with system variablese
-	template = replace_string_with_hashtable_variables(template, systemVarsTable);	
+	template =
+	    replace_string_with_hashtable_variables(template, systemVarsTable);
 	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s", outputDir, MAKEFILE_NAME);
 	stringToFile(fullPath, template);
 	free(template);
-		
-		
-		
-	free(kernelProto);	
+
+	free(kernelProto);
 	free(currentDate);
-	cmdline_parser_free(&args_info);	
+	cmdline_parser_free(&args_info);
 	tabela_destruir(&systemVarsTable);
 	lista_destruir(&varsIgnoreList);
 	return 0;
 }
 
-/**
-*
-* Stores a file in a string
-*
-*http://stackoverflow.com/questions/1285097/how-to-copy-text-file-to-string-in-c
-*
-*/
-char *fileToString(char *fileName)
-{
-	long f_size;
-	char *code;
-	size_t code_s;
-	FILE *fp = NULL;
-	
-	if((fp = fopen(fileName, "r")) == NULL){
-		ERROR(3,"Can't open file to read");
-	}
-	
-	fseek(fp, 0, SEEK_END);
-	f_size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
-	code_s = sizeof(char) * f_size + 1;
-	code = malloc(code_s);
-	code[code_s - 1] = 0;
-	fread(code, 1, f_size, fp);
-	fclose(fp);
-	return code;
-}
-
-
-/**
-*
-* Replaces all occurences of string A by string B on string C
-*
-*http://stackoverflow.com/questions/3659694/how-to-replace-substring-in-c
-*
-*/
-char *str_replace(const char *s, const char *old, const char *new)
-{
-	size_t slen = strlen(s) + 1;
-	char *cout = malloc(slen), *p = cout;
-	if (!p)
-		return 0;
-	while (*s)
-		if (!strncmp(s, old, strlen(old))) {
-			p = (char *)(p - cout);
-			cout = realloc(cout, slen += strlen(new) - strlen(old));
-			p = cout + (long)p;
-			p += strlen(strcpy(p, new));
-			s += strlen(old);
-		} else
-			*p++ = *s++;
-	*p = 0;
-	return cout;
-}
-
 int fill_grid_dim(Coords3D * grid_dim, struct gengetopt_args_info *args_info)
 {
 	//validates grid dim x
-
-	int isValidFlag = 0;
 	if (args_info->blocks_given >= 1) {
-		isValidFlag = args_info->blocks_arg[0] >= 1
-		    && args_info->blocks_arg[0] <= 65535;
+		if (args_info->blocks_arg[0] >= 1
+		    && args_info->blocks_arg[0] <= 65535) {
+			grid_dim->x = args_info->blocks_arg[0];
+			strcpy(grid_dim->sx, args_info->blocks_orig[0]);
+		} else {
+			printf
+			    ("Warning: Invalid grid x dimension (it must be set from 1 to 65535)\n\n");
+		}
 	}
-	if (isValidFlag) {
-		grid_dim->x = args_info->blocks_arg[0];
-		strcpy(grid_dim->sx, args_info->blocks_orig[0]);
-	} else {
-		printf
-		    ("Warning: Invalid grid x dimension (it must be larger than 0 and lower than 65536)\n\n");
-	}
-
 	//validates grid dim y
-	isValidFlag = 0;
 	if (args_info->blocks_given >= 2) {
-		isValidFlag = args_info->blocks_arg[1] >= 1
-		    && args_info->blocks_arg[1] <= 65535;
 
+		if (args_info->blocks_arg[1] >= 1
+		    && args_info->blocks_arg[1] <= 65535) {
+			grid_dim->y = args_info->blocks_arg[1];
+			strcpy(grid_dim->sy, args_info->blocks_orig[1]);
+		} else {
+			printf
+			    ("Warning: Invalid grid y dimension (it must be set from 1 to 65535)\n\n");
+		}
 	}
-	if (isValidFlag) {
-		grid_dim->y = args_info->blocks_arg[1];
-		strcpy(grid_dim->sy, args_info->blocks_orig[1]);
-	} else {
-		printf
-		    ("Warning: Invalid grid y dimension (it must be larger than 0 and lower than 65536)\n\n");
-	}
-
 	//validates grid dim z
-	isValidFlag = 0;
 	if (args_info->blocks_given >= 3) {
-		isValidFlag = args_info->blocks_arg[2] >= 1
-		    && args_info->blocks_arg[2] <= 65535;
+		if (args_info->blocks_arg[2] >= 1
+		    && args_info->blocks_arg[2] <= 65535) {
+			grid_dim->z = args_info->blocks_arg[2];
+			strcpy(grid_dim->sz, args_info->blocks_orig[2]);
+		} else {
 
+			printf
+			    ("Warning: Invalid grid z dimension (it must be set from 1 to 65535)\n\n");
+		}
 	}
-	if (isValidFlag) {
-		grid_dim->z = args_info->blocks_arg[2];
-		strcpy(grid_dim->sz, args_info->blocks_orig[2]);
-	} else {
-		printf
-		    ("Warning: Invalid grid z dimension (it must be larger than 0 and lower than 65536)\n\n");
+	
+	if (strcmp(grid_dim->sx, "")) {
+		sprintf(grid_dim->csvString,"%s" , grid_dim->sx);
+		if (strcmp(grid_dim->sy, "")) {
+			sprintf(grid_dim->csvString,"%s,%s" , grid_dim->csvString, grid_dim->sy);
+			if (strcmp(grid_dim->sz, "")) {
+				sprintf(grid_dim->csvString,"%s,%s" , grid_dim->csvString, grid_dim->sz);
+			}
+		}
+	}else{
+		strcpy(grid_dim->csvString, "1");
 	}
+
 	return grid_dim->x * grid_dim->y * grid_dim->z;
 }
 
@@ -413,63 +366,52 @@ int fill_block_dim(Coords3D * block_dim, struct gengetopt_args_info *args_info)
 {
 
 	//validates blocks dim x
-	int isValidFlag = 0;
 	if (args_info->threads_given >= 1) {
-		isValidFlag = args_info->threads_arg[0] >= 1
-		    && args_info->threads_arg[0] <= 65535;
+		if (args_info->threads_arg[0] >= 1
+		    && args_info->threads_arg[0] <= 65535) {
+			block_dim->x = args_info->threads_arg[0];
+			strcpy(block_dim->sx, args_info->threads_orig[0]);
+		} else {
+			printf
+			    ("Warning: Invalid block x dimension (it must be set from 1 to 1024)\n\n");
+		}
 	}
-
-	if (isValidFlag) {
-		block_dim->x = args_info->threads_arg[0];
-		strcpy(block_dim->sx, args_info->threads_orig[0]);
-	} else {
-		printf
-		    ("Warning: Invalid block x dimension (it must be larger than 0 and equal or lower than 1024)\n\n");
-	}
-
 	//validates blocks dim y
-	isValidFlag = 0;
 	if (args_info->threads_given >= 2) {
-		isValidFlag = args_info->threads_arg[1] >= 1
-		    && args_info->threads_arg[1] <= 65535;
+		if (args_info->threads_arg[1] >= 1
+		    && args_info->threads_arg[1] <= 65535) {
+			block_dim->y = args_info->threads_arg[1];
+			strcpy(block_dim->sy, args_info->threads_orig[1]);
+		} else {
+			printf
+			    ("Warning: Invalid block y dimension (it must be set from 1 to 1024)\n\n");
+		}
 
 	}
-	if (isValidFlag) {
-		block_dim->y = args_info->threads_arg[1];
-		strcpy(block_dim->sy, args_info->threads_orig[1]);
-	} else {
-		printf
-		    ("Warning: Invalid block y dimension (it must be larger than 0 and equal or lower than 1024)\n\n");
-	}
-
 	//validates blocks dim z
-	isValidFlag = 0;
 	if (args_info->threads_given >= 3) {
-		isValidFlag = args_info->threads_arg[2] >= 1
-		    && args_info->threads_arg[2] <= 65535;
+		if (args_info->threads_arg[2] >= 1
+		    && args_info->threads_arg[2] <= 65535) {
+			block_dim->z = args_info->threads_arg[2];
+			strcpy(block_dim->sz, args_info->threads_orig[2]);
+		} else {
+			printf
+			    ("Warning: Invalid block z dimension (it must be set from 1 to 512)\n\n");
+		}
 
 	}
-	if (isValidFlag) {
-		block_dim->z = args_info->threads_arg[2];
-		strcpy(block_dim->sz, args_info->threads_orig[2]);
-	} else {
-		printf
-		    ("Warning: Invalid block z dimension (it must be larger than 0 and equal or lower than 512)\n\n");
+
+	if (strcmp(block_dim->sx, "")) {
+		sprintf(block_dim->csvString,"%s" , block_dim->sx);
+		if (strcmp(block_dim->sy,"")) {
+			sprintf(block_dim->csvString,"%s,%s" , block_dim->csvString, block_dim->sy);
+			if (strcmp(block_dim->sz, "")) {
+				sprintf(block_dim->csvString,"%s,%s" , block_dim->csvString, block_dim->sz);
+			}
+		}
+	}else{
+		strcpy(block_dim->csvString, "1");
 	}
+
 	return block_dim->x * block_dim->y * block_dim->z;
 }
-
-/**
-*
-* Stores a string in a file
-*
-*/
-void stringToFile(char *filename, char *string){
-	FILE *fptr = NULL;
-	if ((fptr = fopen(filename, "w")) == NULL){
-		ERROR(3, "Can't open file to write");
-	}
-	fprintf(fptr, "%s", string);
-	fclose(fptr);
-}
-

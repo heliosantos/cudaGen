@@ -12,13 +12,6 @@
 #include "cmdline.h"
 #include "3rdParty/hashtables.h"
 #include "templateGen.h"
-int createKernel(char *outputDir, char *kernelName, int geometry);
-
-char *fileToString(char *fileName);
-
-void stringToFile(char *filename, char *string);
-
-char *str_replace(const char *s, const char *old, const char *new);
 
 int fill_grid_dim(Coords3D *grid_dim, struct gengetopt_args_info *args_info);
 

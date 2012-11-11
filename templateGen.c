@@ -22,6 +22,7 @@
 #include "templateGen.h"
 #include "main.h"
 #include "3rdParty/debug.h"
+#include "utils.h"
 
 void fill_file_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
 	char *split = NULL;
@@ -64,17 +65,24 @@ void fill_file_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
 
 
 void fill_system_vars_hashtable(HASHTABLE_T * table, char *currentDate, Coords3D *grid_dim, Coords3D *block_dim, char *filename, char *capitalFilename, char *kernelProto, char *userName){
-	tabela_inserir(table, "$!FILENAME!$", filename);
-	tabela_inserir(table, "$!CAPITAL_FILENAME!$", capitalFilename);
-	tabela_inserir(table, "$!C_DATE!$", currentDate);	
-	tabela_inserir(table, "$!BX!$", grid_dim->sx);
-	tabela_inserir(table, "$!BY!$", grid_dim->sy);
-	tabela_inserir(table, "$!BZ!$", grid_dim->sz);
-	tabela_inserir(table, "$!TX!$", block_dim->sx);
-	tabela_inserir(table, "$!TY!$", block_dim->sy);
-	tabela_inserir(table, "$!TZ!$", block_dim->sz);
-	tabela_inserir(table, "$!KERNEL_PROTO!$", kernelProto);
-	tabela_inserir(table, "$!USER_NAME!$", userName);
+	tabela_inserir(table, "$!FILENAME!$", string_clone(filename));
+	tabela_inserir(table, "$!CAPITAL_FILENAME!$", string_clone(capitalFilename));
+	tabela_inserir(table, "$!C_DATE!$", string_clone(currentDate));	
+	tabela_inserir(table, "$!BX!$", string_clone(grid_dim->sx));
+	tabela_inserir(table, "$!BY!$", string_clone(grid_dim->sy));
+	tabela_inserir(table, "$!BZ!$", string_clone(grid_dim->sz));
+	tabela_inserir(table, "$!GRID_DIM!$", string_clone(grid_dim->csvString));
+	tabela_inserir(table, "$!TX!$", string_clone(block_dim->sx));
+	tabela_inserir(table, "$!TY!$", string_clone(block_dim->sy));
+	tabela_inserir(table, "$!TZ!$", string_clone(block_dim->sz));
+	tabela_inserir(table, "$!BLOCK_DIM!$", string_clone(block_dim->csvString));
+	tabela_inserir(table, "$!KERNEL_PROTO!$", string_clone(kernelProto));
+	tabela_inserir(table, "$!USER_NAME!$", string_clone(userName));
+	
+	
+	
+	
+	
 }
 
 char *replace_string_with_hashtable_variables(char *template, HASHTABLE_T * table){
@@ -103,10 +111,6 @@ char *replace_string_with_hashtable_variables(char *template, HASHTABLE_T * tabl
 	return template;
 }
 
-void free_string(char *str){
-	free(str);
-}
-
 void free_matched_vars_from_hashtable(HASHTABLE_T *table, LISTA_GENERICA_T *var_list){
 	LISTA_GENERICA_T *keys;
 	ITERADOR_T *iterador;
@@ -132,13 +136,9 @@ void free_matched_vars_from_hashtable(HASHTABLE_T *table, LISTA_GENERICA_T *var_
 }
 
 int list_compare_elements(char *str1, char *str2){
-	printf("does %s matches %s ?", str1, str2);
-
 	if(strstr(str1, str2) != NULL){
-		printf(" yes\n");	
 		return 0;				
 	}
-	printf(" no\n");
 	return 1;
 }
 
