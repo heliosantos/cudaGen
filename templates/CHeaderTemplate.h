@@ -1,12 +1,12 @@
 /**
-* @file: $FILENAME$.h
+* @file: $!FILENAME!$.h
 * @author: *** insert name **
-* @created: *** $C_DATE$ ***
+* @created: *** $!C_DATE!$ ***
 * @comment 
 */
 
 
-#ifndef __$CAPITAL_FILENAME$_H
-#define __$CAPITAL_FILENAME$_H
+#ifndef __$!CAPITAL_FILENAME!$_H
+#define __$!CAPITAL_FILENAME!$_H
 
 #endif

@@ -19,15 +19,28 @@ typedef struct Coords3D_s {
 	char sz[6];
 } Coords3D;
 
+typedef struct MultilineString_s{
+	char **line;
+	int numberOfLines;
+} MultilineString;
 
-void fill_cu_main_template_hashtable(HASHTABLE_T *tabela, Coords3D *grid_dim, Coords3D *block_dim);
 
-void fill_cu_proto_template_hashtable(HASHTABLE_T * tabela, char *kernelName, char *filename, char *currentDate);
+void freeMultiLineString(MultilineString *multilineString);
 
-void fill_header_template_hashtable(HASHTABLE_T * tabela, char *filename, char *capitalFilename, char *currentDate);
+void fill_cu_main_template_hashtable(HASHTABLE_T *table, Coords3D *grid_dim, Coords3D *block_dim);
 
-void fill_c_main_template_hashtable(HASHTABLE_T * tabela, char *filename, char *currentDate);
+void fill_cu_proto_template_hashtable(HASHTABLE_T * table, char *kernelName, char *filename, char *currentDate);
 
-char *replace_string_with_template_variables(char *template, HASHTABLE_T * tabela);
+void fill_header_template_hashtable(HASHTABLE_T *table, char *filename, char *capitalFilename, char *currentDate);
+
+void fill_c_main_template_hashtable(HASHTABLE_T *table, char *filename, char *currentDate);
+
+void fill_system_vars_hashtable(HASHTABLE_T *table, char *currentDate, Coords3D *grid_dim, Coords3D *block_dim, char *filename, char *capitalFilename, char *kernelProto, char *userName);
+
+void fill_user_vars_hashtable(HASHTABLE_T *table, char *unparsedVars);
+
+char *replace_string_with_template_variables(char *template, HASHTABLE_T *table);
+
+char *replace_string_with_template_multiline_variables(char *template, HASHTABLE_T * table);
 
 #endif
