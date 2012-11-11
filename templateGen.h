@@ -19,21 +19,12 @@ typedef struct Coords3D_s {
 	char sz[6];
 } Coords3D;
 
-typedef struct MultilineString_s{
-	char **line;
-	int numberOfLines;
-} MultilineString;
-
-
-
-void freeMultiLineString(MultilineString *multilineString);
-
 void fill_system_vars_hashtable(HASHTABLE_T *table, char *currentDate, Coords3D *grid_dim, Coords3D *block_dim, char *filename, char *capitalFilename, char *kernelProto, char *userName);
 
 void fill_file_vars_hashtable(HASHTABLE_T *table, char *unparsedVars);
 
 char *replace_string_with_template_variables(char *template, HASHTABLE_T *table);
 
-char *replace_string_with_template_multiline_variables(char *template, HASHTABLE_T * table);
+void freeString(char *str);
 
 #endif

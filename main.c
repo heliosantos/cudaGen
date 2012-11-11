@@ -203,14 +203,16 @@ int main(int argc, char **argv)
 	
 	// get the template
 	template = fileToString(mainTemplateName);
-	// get the file vars for template
+	// get the file vars for vars template
 	fileVars = fileToString(fileVarMainTemplateName);		
 	// creates an hastable containing the file vars 
-	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeString);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
-	free(fileVars);		
+	free(fileVars);	
+	
+		
 	// update the template with vars from file
-	template = replace_string_with_template_multiline_variables(template, fileVarsTable);
+	template = replace_string_with_template_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
 	// update the Main template with system variablese
 	template = replace_string_with_template_variables(template, systemVarsTable);	
@@ -227,11 +229,11 @@ int main(int argc, char **argv)
 	// get the file vars for template
 	fileVars = fileToString(fileVarHeaderTemplateName);		
 	// creates an hastable containing the file vars 
-	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeString);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
 	free(fileVars);		
 	// update the template with vars from file
-	template = replace_string_with_template_multiline_variables(template, fileVarsTable);
+	template = replace_string_with_template_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
 	// update the template with system variablese
 	template = replace_string_with_template_variables(template, systemVarsTable);	
@@ -247,11 +249,11 @@ int main(int argc, char **argv)
 	// get the file vars for template
 	fileVars = fileToString(fileVarMakefileTemplateName);		
 	// creates an hastable containing the file vars 
-	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC)freeString);
 	fill_file_vars_hashtable(fileVarsTable, fileVars);
 	free(fileVars);		
 	// update the template with vars from file
-	template = replace_string_with_template_multiline_variables(template, fileVarsTable);
+	template = replace_string_with_template_variables(template, fileVarsTable);
 	tabela_destruir(&fileVarsTable);
 	// update the template with system variablese
 	template = replace_string_with_template_variables(template, systemVarsTable);	

@@ -23,21 +23,11 @@
 #include "main.h"
 #include "3rdParty/debug.h"
 
-
-void freeMultiLineString(MultilineString *multilineString){
-	int i = 0;
-	for(i = 0; i < multilineString->numberOfLines; i++){
-		free(multilineString->line[i]);
-	}
-	free(multilineString->line);
-	free(multilineString);
-}
-
 void fill_file_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
 	char *split = NULL;
 	char *key = NULL;	
 	
-	MultilineString *value = NULL;
+	char *value = NULL;
 		
 	split = strtok(unparsedVars, "\n");
 		
@@ -52,30 +42,23 @@ void fill_file_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
 				value = NULL;
 			}
 			
-			 if((value = (MultilineString *)malloc(sizeof(MultilineString))) == NULL){
-			 	ERROR(4, "Failed Malloc");
-			 }
-			 value->numberOfLines = 0;
 			 key = split;
 			 	
 		}else{
-			if(value->numberOfLines == 0){
-				value->numberOfLines++;
-				value->line = (char**)malloc(sizeof(char*) * value->numberOfLines);
+			if(value == NULL){
+				value = (char*)malloc(len + 2);
+				value[0] = 0;
 			}else{
-				value->numberOfLines++;
-				value->line = realloc(value->line, sizeof(char*) * value->numberOfLines);
+				value = (char*)realloc(value, strlen(value) + len + 3);
 			}
-						
-			value->line[value->numberOfLines - 1] = (char*)malloc(len + 1);
-			strcpy(value->line[value->numberOfLines - 1], split);
+			sprintf(value, "%s\n%s", value, split);
 		}
 		
 		split = strtok(NULL, "\n");
 	}
 	
 	if(key != NULL && value != NULL){
-		tabela_inserir(table, key, value);
+		tabela_inserir(table, key, value);	
 	}
 }
 
@@ -120,52 +103,7 @@ char *replace_string_with_template_variables(char *template, HASHTABLE_T * table
 	return template;
 }
 
-char *replace_string_with_template_multiline_variables(char *template, HASHTABLE_T * table){
-	int i = 0;
-	int len = 0;
-	
-	LISTA_GENERICA_T *keys;
-	ITERADOR_T *iterador;
-
-	//a list containing all keys of hashtable
-	keys = tabela_criar_lista_chaves(table);
-
-	//iterator for the list of keys
-	iterador = lista_criar_iterador(keys);
-
-	//for each key, replaces the key in the template for its value
-	char *it;
-	while ((it = (char *)iterador_proximo_elemento(iterador)) != NULL) {
-		
-		MultilineString *value = (MultilineString*)tabela_consultar(table, it);	
-		char *toReplace = NULL;
-		
-		for(i = 0; i < value->numberOfLines; i++){
-			len = strlen(value->line[i]);
-			if(toReplace == NULL){
-				toReplace = malloc(len + 2);
-				toReplace[0] = 0;
-			}else{
-			
-				if((toReplace = realloc(toReplace, strlen(toReplace) + len + 2)) == NULL){
-					ERROR(4, "Can't alloc");
-				}			
-			}
-			
-			sprintf(toReplace, "%s%s\n", toReplace, value->line[i]);
-		}		
-		
-		char *temp;
-		temp = str_replace(template, it, toReplace);
-		if(toReplace != NULL){
-			free(toReplace);
-			toReplace = NULL;
-		}
-		free(template);
-		template = temp;
-	}		
-	
-	iterador_destruir(&iterador);
-	lista_destruir(&keys);
-	return template;
+void freeString(char *str){
+	free(str);
 }
+
