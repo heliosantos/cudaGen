@@ -33,7 +33,7 @@ void freeMultiLineString(MultilineString *multilineString){
 	free(multilineString);
 }
 
-void fill_user_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
+void fill_file_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
 	char *split = NULL;
 	char *key = NULL;	
 	

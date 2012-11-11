@@ -22,14 +22,23 @@
 
 #define C_HEADER_TEMPLATE "templates/CHeaderTemplate.h"
 #define C_MAIN_TEMPLATE "templates/CMainTemplate.c"
-#define C_MAKEFILE_TEMPLATE "templates/CMakefileTemplate"
+#define C_MAKEFILE_TEMPLATE "templates/CMakefileTemplate.make"
 
 #define CU_HEADER_TEMPLATE "templates/CuHeaderTemplate.h"
 #define CU_MAIN_TEMPLATE "templates/CuMainTemplate.cu"
-#define CU_MAKEFILE_TEMPLATE "templates/CuMakefileTemplate"
+#define CU_MAKEFILE_TEMPLATE "templates/CuMakefileTemplate.make"
 #define CU_PROTO_TEMPLATE "templates/CuProtoTemplate.cu"
 
+#define C_HEADER_TEMPLATE_VARS "templates/CHeaderTemplateVars.h"
+#define C_MAIN_TEMPLATE_VARS "templates/CMainTemplateVars.c"
+#define C_MAKEFILE_TEMPLATE_VARS "templates/CMakefileTemplateVars.make"
+
+#define CU_HEADER_TEMPLATE_VARS "templates/CuHeaderTemplateVars.h"
 #define CU_MAIN_TEMPLATE_VARS "templates/CuMainTemplateVars.cu"
+#define CU_MAKEFILE_TEMPLATE_VARS "templates/CuMakefileTemplateVars.make"
+#define CU_PROTO_TEMPLATE_VARS "templates/CuProtoTemplateVars.cu"
+
+#define MAKEFILE_NAME "makefile"
 
 
 #define MAX_KNAME 256
@@ -45,26 +54,28 @@ int main(int argc, char **argv)
 	
 	char outputDir[PATH_MAX] = "";
 	char filename[PATH_MAX] = "";
-	char fileVarTemplateName[PATH_MAX] = "";
 	char capitalFilename[PATH_MAX] = "";
-	char fullPath[PATH_MAX] = "";
-	char templateName[PATH_MAX] = "";
-	char headerTemplateName[PATH_MAX] = "";
+	char fullPath[PATH_MAX] = "";	
 	char fileType[4] = "";
 	
-	char userName[PATH_MAX] = "";
+	
+	char mainTemplateName[PATH_MAX] = "";
+	char headerTemplateName[PATH_MAX] = "";
+	char makefileTemplateName[PATH_MAX] = "";
+	
+	char fileVarMainTemplateName[PATH_MAX] = "";
+	char fileVarHeaderTemplateName[PATH_MAX] = "";
+	char fileVarMakefileTemplateName[PATH_MAX] = "";	
+	
+	char userName[PATH_MAX] = "your name";
 	char *kernelProto = NULL;
 	char *fileVars = NULL;
 	
 	HASHTABLE_T *systemTable;
 	HASHTABLE_T *fileVarTable;
 	
-	HASHTABLE_T *templateHashtable;
-	HASHTABLE_T *headerHashtable;
-	
 	
 	char *template;
-	char *headerTemplate;
 	
 	unsigned int i = 0;
 	
@@ -80,7 +91,7 @@ int main(int argc, char **argv)
 	}
 	
 	if (args_info.proto_given) {
-		kernelProto = malloc(strlen(args_info.proto_arg));
+		kernelProto = malloc(strlen(args_info.proto_arg) + 1);
 		strcpy(kernelProto, args_info.proto_arg);
 		parseGivenName(kernelProto);
 	}else{
@@ -135,84 +146,128 @@ int main(int argc, char **argv)
 	systemTable = tabela_criar(11, NULL);
 	fill_system_vars_hashtable(systemTable, currentDate, &grid_dim, &block_dim, filename, capitalFilename, kernelProto, userName);	
 	
-	//creates an hashtable with file fetched template variables
-	fileVarTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);		
-		
-		
-	//creates hashtable where the key is a template tag to be replace by the key's value
-	templateHashtable = tabela_criar(10, NULL);
-	headerHashtable = tabela_criar(10, NULL);
+			
+	
 
 	if (args_info.proto_given) {
-		strcpy(templateName, CU_PROTO_TEMPLATE);	
-		
+		strcpy(mainTemplateName, CU_PROTO_TEMPLATE);
+	
 		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
+		
+		strcpy(makefileTemplateName, CU_MAKEFILE_TEMPLATE);
+		
+		strcpy(fileVarMainTemplateName, CU_PROTO_TEMPLATE_VARS);
+		
+		strcpy(fileVarHeaderTemplateName, CU_HEADER_TEMPLATE_VARS);
+		
+		strcpy(fileVarMakefileTemplateName, CU_MAKEFILE_TEMPLATE_VARS);
 		
 		strcat(fileType, ".cu");
 		
 	}else if(args_info.regular_code_given){
-		strcpy(templateName, C_MAIN_TEMPLATE);
-		
+		strcpy(mainTemplateName, C_MAIN_TEMPLATE);
+	
 		strcpy(headerTemplateName, C_HEADER_TEMPLATE);
+		
+		strcpy(makefileTemplateName, C_MAKEFILE_TEMPLATE);
+		
+		strcpy(fileVarMainTemplateName, C_MAIN_TEMPLATE_VARS);
+		
+		strcpy(fileVarHeaderTemplateName, C_HEADER_TEMPLATE_VARS);
+		
+		strcpy(fileVarMakefileTemplateName, C_MAKEFILE_TEMPLATE_VARS);
 		
 		strcat(fileType, ".c");
 		
 	}else{
-		strcpy(templateName, CU_MAIN_TEMPLATE);
-		//fill_cu_main_template_hashtable(templateHashtable, &grid_dim, &block_dim);
+		strcpy(mainTemplateName, CU_MAIN_TEMPLATE);
 	
 		strcpy(headerTemplateName, CU_HEADER_TEMPLATE);
 		
-		strcpy(fileVarTemplateName, CU_MAIN_TEMPLATE_VARS);
+		strcpy(makefileTemplateName, CU_MAKEFILE_TEMPLATE);
+		
+		strcpy(fileVarMainTemplateName, CU_MAIN_TEMPLATE_VARS);
+		
+		strcpy(fileVarHeaderTemplateName, CU_HEADER_TEMPLATE_VARS);
+		
+		strcpy(fileVarMakefileTemplateName, CU_MAKEFILE_TEMPLATE_VARS);
 		
 		strcat(fileType, ".cu");
 	}
 	
 	
+	/* Create Main file */
 	
-	//reads the template from file
-	template = fileToString(templateName);
-	
-	// save file var variables
-	fileVars = fileToString(CU_MAIN_TEMPLATE_VARS);	
-	fill_user_vars_hashtable(fileVarTable, fileVars);		
+	// get the template
+	template = fileToString(mainTemplateName);
+	// get the file vars for template
+	fileVars = fileToString(fileVarMainTemplateName);		
+	// create a table 
+	fileVarTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	// save vars from file to table
+	fill_file_vars_hashtable(fileVarTable, fileVars);
+	free(fileVars);		
+	// update the template with vars from file
 	template = replace_string_with_template_multiline_variables(template, fileVarTable);
-	
-	// save system variables
+	tabela_destruir(&fileVarTable);
+	// update the Main template with system variablese
 	template = replace_string_with_template_variables(template, systemTable);	
-	
-	//save file
+	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, fileType);
 	stringToFile(fullPath, template);
+	free(template);
 	
 	
+	/* Create Header file */
 	
-	//reads the template from file
-	headerTemplate = fileToString(headerTemplateName);
-	
-	// save header variables
-	headerTemplate = replace_string_with_template_variables(headerTemplate, headerHashtable);
-	
-	// save system variables
-	headerTemplate = replace_string_with_template_variables(headerTemplate, systemTable);
-	
-	// save file
+	// get the header template
+	template = fileToString(headerTemplateName);
+	// get the file vars for template
+	fileVars = fileToString(fileVarHeaderTemplateName);		
+	// create a table 
+	fileVarTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	// save vars from file to table
+	fill_file_vars_hashtable(fileVarTable, fileVars);
+	free(fileVars);		
+	// update the template with vars from file
+	template = replace_string_with_template_multiline_variables(template, fileVarTable);
+	tabela_destruir(&fileVarTable);
+	// update the template with system variablese
+	template = replace_string_with_template_variables(template, systemTable);	
+	//writes to destination file
 	snprintf(fullPath, PATH_MAX, "%s%s%s", outputDir, filename, ".h");
-	stringToFile(fullPath, headerTemplate);
+	stringToFile(fullPath, template);
+	free(template);
 		
-	free(fileVars);
+	/* Create Make file */
+	
+	// get the header template
+	template = fileToString(makefileTemplateName);
+	// get the file vars for template
+	fileVars = fileToString(fileVarMakefileTemplateName);		
+	// create a table 
+	fileVarTable = tabela_criar(10, (LIBERTAR_FUNC)freeMultiLineString);
+	// save vars from file to table
+	fill_file_vars_hashtable(fileVarTable, fileVars);
+	free(fileVars);		
+	// update the template with vars from file
+	template = replace_string_with_template_multiline_variables(template, fileVarTable);
+	tabela_destruir(&fileVarTable);
+	// update the template with system variablese
+	template = replace_string_with_template_variables(template, systemTable);	
+	//writes to destination file
+	snprintf(fullPath, PATH_MAX, "%s%s", outputDir, MAKEFILE_NAME);
+	stringToFile(fullPath, template);
+	free(template);
+		
+		
+		
 	free(kernelProto);	
 	free(currentDate);
-	free(template);
-	free(headerTemplate);
 	//free gengetopt
 	cmdline_parser_free(&args_info);
 	
 	tabela_destruir(&systemTable);
-	tabela_destruir(&fileVarTable);
-	tabela_destruir(&templateHashtable);
-	tabela_destruir(&headerHashtable);
-	
 	return 0;
 }
 

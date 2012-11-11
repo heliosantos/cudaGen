@@ -12,7 +12,7 @@
 
 #include "$!FILENAME!$.h"
 
-__global__ void $!KERNEL_NAME!$
+__global__ void $!KERNEL_PROTO!$
 {
 /*
 * gridDim.x or .y or .z: size, in blocks, of calling grid
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	//dim3 ThreadsPerBlock(1, 1);
 
 		
-	//$!KERNEL_NAME!$;
+	//$!KERNEL_PROTO!$;
 		
 	/*Insert code here */
 

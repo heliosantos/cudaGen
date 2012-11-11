@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 	(void)argv;
 
 	/*Insert code here */
+	$!HELLO!$
 
 	return 0;
 }

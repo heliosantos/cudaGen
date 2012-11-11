@@ -9,6 +9,6 @@
 #ifndef __$!CAPITAL_FILENAME!$_H
 #define __$!CAPITAL_FILENAME!$_H
 
-	//TODO: code here 
-
+	//TODO: code here
+	
 #endif
