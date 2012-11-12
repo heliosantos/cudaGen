@@ -8,9 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "3rdParty/debug.h"
+#include <stdarg.h>
 
+#include "3rdParty/debug.h"
 #include "utils.h"
+
 
 char *string_clone(char *str){
 	if(str == NULL){
@@ -21,6 +23,32 @@ char *string_clone(char *str){
 	return clone;
 }
 
+char *string_join(int n_args, ...){
+	register int i;
+        char *result = "";
+        va_list ap;
+        int length = 0;
+
+        va_start(ap, n_args);
+               
+        for(i = 1; i <= n_args; i++) {
+        	char *current = va_arg(ap, char*);
+        	length +=  strlen(current);
+        } 
+        va_end(ap);
+        
+        va_start(ap, n_args);       
+        result = (char*)malloc(length + 1);
+        result[0] = 0;        
+        for(i = 1; i <= n_args; i++) {
+        	char *current = va_arg(ap, char*);
+        	//strcat(result, current);
+        	sprintf(result, "%s%s", result, current);
+        }
+
+        va_end(ap);
+        return result;
+}
 
 /**
 *

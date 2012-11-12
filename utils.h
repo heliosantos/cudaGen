@@ -11,6 +11,10 @@
 	
 char *string_clone(char *str);
 
+char *string_join(int n_args, ...);
+
+char *string_join(int i, ...);
+
 char *fileToString(char *fileName);
 
 void stringToFile(char *filename, char *string);
