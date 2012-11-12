@@ -21,6 +21,3 @@ docs: Doxyfile
 Doxyfile:
 	doxygen -g Doxyfile
 
-indent:
-	indent ${IFLAGS} *.cu *.h
-

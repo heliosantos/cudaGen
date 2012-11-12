@@ -18,7 +18,8 @@ void *MyMalloc(size_t size, const int line, const char *file)
 	return ptr;
 }
 
-/*-------------------------------------------------------------------* MY_MALLOC macro.
+/*-------------------------------------------------------------------
+* MY_MALLOC macro.
 * Wrapping macro for MyMalloc function (provides "file" and "line" 
 * parameters).
 *-----------------------------------------------------------------*/

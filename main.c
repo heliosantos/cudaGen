@@ -87,17 +87,25 @@ int main(int argc, char **argv)
 	
 	//creates an hashtable with system generated template variables
 	systemVarsTable = tabela_criar(11, (LIBERTAR_FUNC) free);
-	/*fill_system_vars_hashtable(systemVarsTable, currentDate, &grid_dim,
-				   &block_dim, filename, capitalFilename,
-				   kernelProto, userName);*/
-		
+
+	
+	varsIgnoreList = lista_criar((LIBERTAR_FUNC) free);
+	
 	tabela_inserir(systemVarsTable, "$!C_DATE!$", string_clone(currentDate));	
 	tabela_inserir(systemVarsTable, "$!USER_NAME!$", string_clone(userName));
 
+	
 	// --about
 	if (args_info.about_given) {
 		return 0;
+	} 
+	
+	// --student
+	
+	for(i = 0; i < args_info.student_given; i ++){
+		lista_inserir(varsIgnoreList, string_clone(args_info.student_arg[i]));
 	}
+	
 	// --proto
 	if (args_info.proto_given) {
 		tabela_inserir(systemVarsTable, "$!KERNEL_PROTO!$", string_clone(args_info.proto_arg));	
@@ -155,7 +163,6 @@ int main(int argc, char **argv)
 
 	sprintf(outputDir, "%s/", outputDir);
 
-	varsIgnoreList = lista_criar((LIBERTAR_FUNC) free);
 
 	if (!args_info.measure_given) {
 		char *var = malloc(strlen("MEASURE") + 1);

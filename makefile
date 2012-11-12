@@ -13,19 +13,30 @@ OBJS = main.o cmdline.o dirutils.o hashtables.o listas.o debug.o templateGen.o u
 # nome do executavel 
 PROGRAM = cudagen.exe
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 
+
+SOURCE_TEMPLATE_PATH = ./templates
+INSTALL_TEMPLATE_PATH = ~/.cudaGen/
+BACKUP_FILENAME = templates.tar
+
+.PHONY: clean all docs indent
+
 
 # make principal
 all: ${PROGRAM}
 
+install:
+	tar -zxf $(INSTALL_TEMPLATE_PATH)$(BACKUP_FILENAME) -C $(INSTALL_TEMPLATE_PATH)
+	
+
+configure:
+	tar -zcf $(BACKUP_FILENAME) $(SOURCE_TEMPLATE_PATH) 
+	rm -rf $(INSTALL_TEMPLATE_PATH) 
+	mkdir $(INSTALL_TEMPLATE_PATH)  
+	mv -f $(BACKUP_FILENAME) $(INSTALL_TEMPLATE_PATH) 
+
 # compilar com depuração
 dbug: CFLAGS += -D SHOW_DEBUG 
 dbug: ${PROGRAM}
-
-docs: 
-	doxygen Doxyfile
-
-	
 
 ${PROGRAM}: ${OBJS}
 	${CC} -o $@ ${OBJS} ${LIBS}
@@ -59,3 +70,14 @@ debug.o: ${Third}/debug.c ${Third}/debug.h
 clean:
 	rm -f *.o core.* *~ ${PROGRAM} *.bak 
 	
+	
+docs: Doxyfile
+	doxygen Doxyfile
+
+Doxyfile:
+	doxygen -g Doxyfile
+
+indent:
+	indent -gnu *.c *.h
+
+

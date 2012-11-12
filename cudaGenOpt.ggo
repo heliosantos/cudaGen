@@ -16,6 +16,7 @@ section "optional options"
 option "regular-code"   r "Generate simple C template without CUDA" dependon="dir" flag off
 option "Force"          F "force destination directory" dependon="dir" flag off
 option "measure"    m "kernel measure GPU execution time"  dependon="dir" flag off
+option "student"     s  "List of variables that should not be included in the template" string no multiple dependon="dir"
 
 section "geometry options"
 defmode "modeGeometry" modedesc="Geometry mode options"

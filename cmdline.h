@@ -49,6 +49,11 @@ struct gengetopt_args_info
   const char *Force_help; /**< @brief force destination directory help description.  */
   int measure_flag;	/**< @brief kernel measure GPU execution time (default=off).  */
   const char *measure_help; /**< @brief kernel measure GPU execution time help description.  */
+  char ** student_arg;	/**< @brief List of variables that should not be included in the template.  */
+  char ** student_orig;	/**< @brief List of variables that should not be included in the template original value given at command line.  */
+  unsigned int student_min; /**< @brief List of variables that should not be included in the template's minimum occurreces */
+  unsigned int student_max; /**< @brief List of variables that should not be included in the template's maximum occurreces */
+  const char *student_help; /**< @brief List of variables that should not be included in the template help description.  */
   int* blocks_arg;	/**< @brief Kernel geometry in blocks.  */
   char ** blocks_orig;	/**< @brief Kernel geometry in blocks original value given at command line.  */
   unsigned int blocks_min; /**< @brief Kernel geometry in blocks's minimum occurreces */
@@ -73,6 +78,7 @@ struct gengetopt_args_info
   unsigned int regular_code_given ;	/**< @brief Whether regular-code was given.  */
   unsigned int Force_given ;	/**< @brief Whether Force was given.  */
   unsigned int measure_given ;	/**< @brief Whether measure was given.  */
+  unsigned int student_given ;	/**< @brief Whether student was given.  */
   unsigned int blocks_given ;	/**< @brief Whether blocks was given.  */
   unsigned int threads_given ;	/**< @brief Whether threads was given.  */
   unsigned int kernel_given ;	/**< @brief Whether kernel was given.  */
