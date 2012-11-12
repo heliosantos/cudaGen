@@ -10,18 +10,6 @@
 
 #include "3rdParty/hashtables.h"
 
-typedef struct Coords3D_s {
-	int x;
-	int y;
-	int z;
-	char sx[6];
-	char sy[6];
-	char sz[6];
-	char csvString[20];
-} Coords3D;
-
-void fill_system_vars_hashtable(HASHTABLE_T *table, char *currentDate, Coords3D *grid_dim, Coords3D *block_dim, char *filename, char *capitalFilename, char *kernelProto, char *userName);
-
 void fill_file_vars_hashtable(HASHTABLE_T *table, char *unparsedVars);
 
 char *replace_string_with_hashtable_variables(char *template, HASHTABLE_T *table);
