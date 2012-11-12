@@ -105,6 +105,13 @@ int main(int argc, char **argv)
 		tabela_inserir(systemVarsTable, "$!KERNEL_PROTO!$", string_clone(""));	
 	}
 	
+	// --kernel
+	if (args_info.kernel_given) {
+		tabela_inserir(systemVarsTable, "$!KERNEL_NAME!$", string_clone(args_info.kernel_arg));	
+	} else {
+		tabela_inserir(systemVarsTable, "$!KERNEL_NAME!$", string_clone("Kernel"));	
+	}
+	
 	// --blocks
 	store_grid_geometry(systemVarsTable, &args_info);
 	// --threads

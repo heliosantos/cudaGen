@@ -64,7 +64,7 @@ float VectorSum(float *vector, int n)
 	return total;
 }
 
-__global__ void $!KERNEL_NAME!$(float *a_dev, float *b_dev, float *c_dev, int n)
+__global__ void itWorks(float *a_dev, float *b_dev, float *c_dev, int n)
 {
 	int stride =
 	    (blockDim.x * blockDim.y * blockDim.z) * (gridDim.x * gridDim.y *
@@ -87,7 +87,7 @@ __global__ void $!KERNEL_NAME!$(float *a_dev, float *b_dev, float *c_dev, int n)
 
 int main(void)
 {
-$!MEASURE_DECLARE_TIMER!$
+
 
 	float *a_host, *b_host, *c_host;
 	float *a_dev, *b_dev, *c_dev;
@@ -168,17 +168,17 @@ $!MEASURE_DECLARE_TIMER!$
 		      cudaMemcpyHostToDevice));
 
 	//dim3 NumBlocks (65535, 65535, 65535);
-	dim3 NumBlocks($!GRID_DIM!$);
+	dim3 NumBlocks(1);
 
 	//for 1.x x<=512, y<=512, z<=64, x*y*z<=512
 	//for 2.x and 3.0 x<=1024, y<=1024, z<=64, x*y*z<=1024
-	dim3 ThreadsPerBlock($!BLOCK_DIM!$);
+	dim3 ThreadsPerBlock(1);
 
-$!MEASURE_CREATE_TIMER!$
+
 	
-	$!KERNEL_NAME!$ <<< NumBlocks, ThreadsPerBlock >>> (a_dev, b_dev, c_dev, N);
+	itWorks <<< NumBlocks, ThreadsPerBlock >>> (a_dev, b_dev, c_dev, N);
 
-$!MEASURE_TERMINATE_TIMER!$
+
 	
 
 	HANDLE_ERROR(cudaMemcpy
@@ -199,7 +199,7 @@ $!MEASURE_TERMINATE_TIMER!$
 	}
 
 	/* Free allocated resources */
-$!MEASURE_FREE_TIMER!$
+
 	MY_FREE(a_host);
 	MY_FREE(b_host);
 	MY_FREE(c_host);
