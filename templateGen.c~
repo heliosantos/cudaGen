@@ -133,14 +133,6 @@ void free_matched_vars_from_hashtable(HASHTABLE_T *table, LISTA_GENERICA_T *var_
 	lista_destruir(&keys);	
 }
 
-/**
- * Function used by void free_matched_vars_from_hashtable(HASHTABLE_T *table, LISTA_GENERICA_T *var_list) to compare a hashtable key to a string element
- *
- * @param str1 a list element
- * @param str2 a hashtable key
- *
- * @return zero when the strings match
- */
 int list_compare_elements(char *str1, char *str2){
 	if(strstr(str1, str2) != NULL){
 		return 0;				

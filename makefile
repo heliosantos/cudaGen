@@ -15,7 +15,7 @@ PROGRAM = cudagen.exe
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 SOURCE_TEMPLATE_PATH = ./templates
-INSTALL_TEMPLATE_PATH = ~/.cudaGen/
+INSTALL_TEMPLATE_PATH = ~/cudagenTemplates/
 BACKUP_FILENAME = templates.tar
 
 .PHONY: clean all docs indent

@@ -44,7 +44,7 @@ bool directoryExists(char *directory)
 }
 
 /**
- * Creates a directory tree (recursive mkdir)
+ * Create a directory tree (recursive mkdir)
  *
  * @param directory directory name to be created
  * @return nothing
@@ -180,7 +180,7 @@ int remove_directory(const char *path)
  * @param path the path
  * @param filename a string to store the filename
  *
- * @return void
+ * @return (TRUE or FALSE)
  */
 void getFilenameFromPath(char *path, char *filename){
 	
