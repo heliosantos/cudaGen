@@ -51,11 +51,6 @@ int main(int argc, char **argv)
 {
 	struct gengetopt_args_info args_info;
 
-	Coords3D grid_dim;
-	Coords3D block_dim;
-
-	int numOfBlocks = 0, numOfThreads = 0;
-
 	char outputDir[PATH_MAX] = "";
 	char filename[PATH_MAX] = "";
 	char capitalFilename[PATH_MAX] = "";
@@ -69,29 +64,34 @@ int main(int argc, char **argv)
 	char fileVarMainTemplateName[PATH_MAX] = "";
 	char fileVarHeaderTemplateName[PATH_MAX] = "";
 	char fileVarMakefileTemplateName[PATH_MAX] = "";
-
-	char userName[PATH_MAX] = "your name";
-	char *kernelProto = NULL;
-	char *fileVars = NULL;
+	
 
 	HASHTABLE_T *systemVarsTable;
 	HASHTABLE_T *fileVarsTable;
-	LISTA_GENERICA_T *varsIgnoreList;
+	LISTA_GENERICA_T *varsIgnoreList;	
+	
+	char userName[PATH_MAX] = "your name";
+	char *fileVars = NULL;
+
 
 	char *template;
 	unsigned int i = 0;
 	char *currentDate = NULL;
-
+	
 	// parse input parameters
 	if (cmdline_parser(argc, argv, &args_info) != 0)
 		exit(1);
-
-	memset(&grid_dim, 0, sizeof(Coords3D));
-	strcpy(grid_dim.csvString, "1"); 
-	memset(&block_dim, 0, sizeof(Coords3D));
-	strcpy(block_dim.csvString, "1"); 
-
+	
 	currentDate = getDateTime();
+	
+	//creates an hashtable with system generated template variables
+	systemVarsTable = tabela_criar(11, (LIBERTAR_FUNC) free);
+	/*fill_system_vars_hashtable(systemVarsTable, currentDate, &grid_dim,
+				   &block_dim, filename, capitalFilename,
+				   kernelProto, userName);*/
+		
+	tabela_inserir(systemVarsTable, "$!C_DATE!$", string_clone(currentDate));	
+	tabela_inserir(systemVarsTable, "$!USER_NAME!$", string_clone(userName));
 
 	// --about
 	if (args_info.about_given) {
@@ -99,22 +99,16 @@ int main(int argc, char **argv)
 	}
 	// --proto
 	if (args_info.proto_given) {
-		kernelProto = malloc(strlen(args_info.proto_arg) + 1);
-		strcpy(kernelProto, args_info.proto_arg);
-		parseGivenName(kernelProto);
+		tabela_inserir(systemVarsTable, "$!KERNEL_PROTO!$", string_clone(args_info.proto_arg));	
 	} else {
-		kernelProto = malloc(2);
-		strcpy(kernelProto, "");
+		tabela_inserir(systemVarsTable, "$!KERNEL_PROTO!$", string_clone(""));	
 	}
-
-	// --blocs
-	if (args_info.blocks_given) {
-		numOfBlocks = fill_grid_dim(&grid_dim, &args_info);
-	}
+	
+	// --blocks
+	fill_grid_dim(systemVarsTable, &args_info);
 	// --threads
-	if (args_info.threads_given) {
-		numOfThreads = fill_block_dim(&block_dim, &args_info);
-	}
+	fill_block_dim(systemVarsTable, &args_info);
+	
 	// --dir
 	// get filename from path (the name of the last directory)
 	getFilenameFromPath(args_info.dir_arg, filename);
@@ -124,6 +118,10 @@ int main(int argc, char **argv)
 		capitalFilename[i] = toupper(filename[i]);
 	}
 	capitalFilename[i] = 0;
+	
+	tabela_inserir(systemVarsTable, "$!FILENAME!$", string_clone(filename));
+	tabela_inserir(systemVarsTable, "$!CAPITAL_FILENAME!$", string_clone(capitalFilename));
+	
 
 	// removes the / character
 	if (args_info.dir_arg[strlen(args_info.dir_arg) - 1] == '/') {
@@ -157,11 +155,7 @@ int main(int argc, char **argv)
 		lista_inserir(varsIgnoreList, var);
 
 	}
-	//creates an hashtable with system generated template variables
-	systemVarsTable = tabela_criar(11, (LIBERTAR_FUNC) free);
-	fill_system_vars_hashtable(systemVarsTable, currentDate, &grid_dim,
-				   &block_dim, filename, capitalFilename,
-				   kernelProto, userName);
+	
 
 	/* defines which templates to use */
 
@@ -301,7 +295,6 @@ int main(int argc, char **argv)
 	stringToFile(fullPath, template);
 	free(template);
 
-	free(kernelProto);
 	free(currentDate);
 	cmdline_parser_free(&args_info);
 	tabela_destruir(&systemVarsTable);
@@ -309,109 +302,109 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-int fill_grid_dim(Coords3D * grid_dim, struct gengetopt_args_info *args_info)
+void fill_grid_dim(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
 {
+	char *x;
+	char *y;
+	char *z;
+	char *csvString;
+	
 	//validates grid dim x
 	if (args_info->blocks_given >= 1) {
-		if (args_info->blocks_arg[0] >= 1
-		    && args_info->blocks_arg[0] <= 65535) {
-			grid_dim->x = args_info->blocks_arg[0];
-			strcpy(grid_dim->sx, args_info->blocks_orig[0]);
-		} else {
-			printf
-			    ("Warning: Invalid grid x dimension (it must be set from 1 to 65535)\n\n");
+		if (args_info->blocks_arg[0] < 1 || args_info->blocks_arg[0] > 65535) {
+			printf("Warning: Invalid grid x dimension (it must be set from 1 to 65535)\n\n");			
 		}
+		x = string_clone(args_info->blocks_orig[0]);
+	}else{
+		x = string_clone("1");
 	}
+	
 	//validates grid dim y
 	if (args_info->blocks_given >= 2) {
-
-		if (args_info->blocks_arg[1] >= 1
-		    && args_info->blocks_arg[1] <= 65535) {
-			grid_dim->y = args_info->blocks_arg[1];
-			strcpy(grid_dim->sy, args_info->blocks_orig[1]);
-		} else {
-			printf
-			    ("Warning: Invalid grid y dimension (it must be set from 1 to 65535)\n\n");
+		if (args_info->blocks_arg[1] < 1 || args_info->blocks_arg[1] > 65535) {
+			printf("Warning: Invalid grid y dimension (it must be set from 1 to 65535)\n\n");			
 		}
+		y = string_clone(args_info->blocks_orig[1]);
+	}else{
+		y = string_clone("1");
 	}
+	
 	//validates grid dim z
 	if (args_info->blocks_given >= 3) {
-		if (args_info->blocks_arg[2] >= 1
-		    && args_info->blocks_arg[2] <= 65535) {
-			grid_dim->z = args_info->blocks_arg[2];
-			strcpy(grid_dim->sz, args_info->blocks_orig[2]);
-		} else {
-
-			printf
-			    ("Warning: Invalid grid z dimension (it must be set from 1 to 65535)\n\n");
+		if (args_info->blocks_arg[2] < 1 || args_info->blocks_arg[2] > 65535) {
+			printf("Warning: Invalid grid z dimension (it must be set from 1 to 65535)\n\n");			
+		}
+		z = string_clone(args_info->blocks_orig[2]);
+	}else{
+		z = string_clone("1");
+	}
+	
+	csvString = malloc(strlen(x) + strlen(y) + strlen(z) + 3);
+	csvString[0] = 0;
+	
+	strcpy(csvString, x);
+	if (strcmp(y, "1")) {
+		sprintf(csvString,"%s,%s" ,csvString, y);
+		if (strcmp(z, "1")) {
+			sprintf(csvString,"%s,%s" , csvString, z);
 		}
 	}
 	
-	if (strcmp(grid_dim->sx, "")) {
-		sprintf(grid_dim->csvString,"%s" , grid_dim->sx);
-		if (strcmp(grid_dim->sy, "")) {
-			sprintf(grid_dim->csvString,"%s,%s" , grid_dim->csvString, grid_dim->sy);
-			if (strcmp(grid_dim->sz, "")) {
-				sprintf(grid_dim->csvString,"%s,%s" , grid_dim->csvString, grid_dim->sz);
-			}
-		}
-	}else{
-		strcpy(grid_dim->csvString, "1");
-	}
-
-	return grid_dim->x * grid_dim->y * grid_dim->z;
+	tabela_inserir(table, "$!BX!$", x);
+	tabela_inserir(table, "$!BY!$", y);
+	tabela_inserir(table, "$!BZ!$", z);
+	tabela_inserir(table, "$!GRID_DIM!$", csvString);
 }
 
-int fill_block_dim(Coords3D * block_dim, struct gengetopt_args_info *args_info)
+void fill_block_dim(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
 {
-
-	//validates blocks dim x
+	char *x;
+	char *y;
+	char *z;
+	char *csvString;
+	
+	//validates grid dim x
 	if (args_info->threads_given >= 1) {
-		if (args_info->threads_arg[0] >= 1
-		    && args_info->threads_arg[0] <= 65535) {
-			block_dim->x = args_info->threads_arg[0];
-			strcpy(block_dim->sx, args_info->threads_orig[0]);
-		} else {
-			printf
-			    ("Warning: Invalid block x dimension (it must be set from 1 to 1024)\n\n");
+		if (args_info->threads_arg[0] < 1 || args_info->threads_arg[0] > 65535) {
+			printf("Warning: Invalid block x dimension (it must be set from 1 to 1024)\n\n");		
 		}
-	}
-	//validates blocks dim y
-	if (args_info->threads_given >= 2) {
-		if (args_info->threads_arg[1] >= 1
-		    && args_info->threads_arg[1] <= 65535) {
-			block_dim->y = args_info->threads_arg[1];
-			strcpy(block_dim->sy, args_info->threads_orig[1]);
-		} else {
-			printf
-			    ("Warning: Invalid block y dimension (it must be set from 1 to 1024)\n\n");
-		}
-
-	}
-	//validates blocks dim z
-	if (args_info->threads_given >= 3) {
-		if (args_info->threads_arg[2] >= 1
-		    && args_info->threads_arg[2] <= 65535) {
-			block_dim->z = args_info->threads_arg[2];
-			strcpy(block_dim->sz, args_info->threads_orig[2]);
-		} else {
-			printf
-			    ("Warning: Invalid block z dimension (it must be set from 1 to 512)\n\n");
-		}
-
-	}
-
-	if (strcmp(block_dim->sx, "")) {
-		sprintf(block_dim->csvString,"%s" , block_dim->sx);
-		if (strcmp(block_dim->sy,"")) {
-			sprintf(block_dim->csvString,"%s,%s" , block_dim->csvString, block_dim->sy);
-			if (strcmp(block_dim->sz, "")) {
-				sprintf(block_dim->csvString,"%s,%s" , block_dim->csvString, block_dim->sz);
-			}
-		}
+		x = string_clone(args_info->threads_orig[0]);
 	}else{
-		strcpy(block_dim->csvString, "1");
+		x = string_clone("1");
 	}
-
-	return block_dim->x * block_dim->y * block_dim->z;
+	
+	//validates grid dim y
+	if (args_info->threads_given >= 2) {
+		if (args_info->threads_arg[1] < 1 || args_info->threads_arg[1] > 65535) {
+			printf("Warning: Invalid block y dimension (it must be set from 1 to 1024)\n\n");			
+		}
+		y = string_clone(args_info->threads_orig[1]);
+	}else{
+		y = string_clone("1");
+	}
+	
+	//validates grid dim z
+	if (args_info->threads_given >= 3) {
+		if (args_info->threads_arg[2] < 1 || args_info->threads_arg[2] > 65535) {
+			printf("Warning: Invalid block z dimension (it must be set from 1 to 512)\n\n");		
+		}
+		z = string_clone(args_info->threads_orig[2]);
+	}else{
+		z = string_clone("1");
+	}
+	
+	csvString = malloc(strlen(x) + strlen(y) + strlen(z) + 3);
+	csvString[0] = 0;
+	
+	strcpy(csvString, x);
+	if (strcmp(y, "1")) {
+		sprintf(csvString,"%s,%s" ,csvString, y);
+		if (strcmp(z, "1")) {
+			sprintf(csvString,"%s,%s" , csvString, z);
+		}
+	}
+	tabela_inserir(table, "$!TX!$", x);
+	tabela_inserir(table, "$!TY!$", y);
+	tabela_inserir(table, "$!TZ!$", z);
+	tabela_inserir(table, "$!BLOCK_DIM!$", csvString);
 }

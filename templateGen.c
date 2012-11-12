@@ -63,28 +63,6 @@ void fill_file_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
 	}
 }
 
-
-void fill_system_vars_hashtable(HASHTABLE_T * table, char *currentDate, Coords3D *grid_dim, Coords3D *block_dim, char *filename, char *capitalFilename, char *kernelProto, char *userName){
-	tabela_inserir(table, "$!FILENAME!$", string_clone(filename));
-	tabela_inserir(table, "$!CAPITAL_FILENAME!$", string_clone(capitalFilename));
-	tabela_inserir(table, "$!C_DATE!$", string_clone(currentDate));	
-	tabela_inserir(table, "$!BX!$", string_clone(grid_dim->sx));
-	tabela_inserir(table, "$!BY!$", string_clone(grid_dim->sy));
-	tabela_inserir(table, "$!BZ!$", string_clone(grid_dim->sz));
-	tabela_inserir(table, "$!GRID_DIM!$", string_clone(grid_dim->csvString));
-	tabela_inserir(table, "$!TX!$", string_clone(block_dim->sx));
-	tabela_inserir(table, "$!TY!$", string_clone(block_dim->sy));
-	tabela_inserir(table, "$!TZ!$", string_clone(block_dim->sz));
-	tabela_inserir(table, "$!BLOCK_DIM!$", string_clone(block_dim->csvString));
-	tabela_inserir(table, "$!KERNEL_PROTO!$", string_clone(kernelProto));
-	tabela_inserir(table, "$!USER_NAME!$", string_clone(userName));
-	
-	
-	
-	
-	
-}
-
 char *replace_string_with_hashtable_variables(char *template, HASHTABLE_T * table){
 
 	LISTA_GENERICA_T *keys;

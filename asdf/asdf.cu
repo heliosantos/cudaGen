@@ -96,8 +96,6 @@ __global__ void DefaultKernel(float *a_dev, float *b_dev, float *c_dev, int n)
 int main(void)
 {
 
-	cudaEvent_t start, stop;
-	float elapsedTime;
 
 	float *a_host, *b_host, *c_host;
 	float *a_dev, *b_dev, *c_dev;
@@ -132,26 +130,17 @@ int main(void)
 		      cudaMemcpyHostToDevice));
 
 	//dim3 NumBlocks (65535, 65535, 65535);
-	dim3 NumBlocks(1, 2, 3);
+	dim3 NumBlocks(1);
 
 	//for 1.x x<=512, y<=512, z<=64, x*y*z<=512
 	//for 2.x and 3.0 x<=1024, y<=1024, z<=64, x*y*z<=1024
-	dim3 ThreadsPerBlock(4, 5, 6);
+	dim3 ThreadsPerBlock(1);
 
 
-	/* create the timers */
-	HANDLE_ERROR(cudaEventCreate(&start));
-	HANDLE_ERROR(cudaEventCreate(&stop));
-	/* start the timer */
-	HANDLE_ERROR(cudaEventRecord(start, 0));
 	
 	DefaultKernel <<< NumBlocks, ThreadsPerBlock >>> (a_dev, b_dev, c_dev, N);
 
 
-	HANDLE_ERROR(cudaEventRecord(stop, 0));
-	cudaEventSynchronize(stop);
-	HANDLE_ERROR(cudaEventElapsedTime(&elapsedTime, start, stop));
-	printf(\"execution took %3.6f miliseconds\", elapsedTime);
 	
 
 	HANDLE_ERROR(cudaMemcpy
@@ -173,8 +162,6 @@ int main(void)
 
 	/* Free allocated resources */
 
-	HANDLE_ERROR(cudaEventDestroy(start));
-	HANDLE_ERROR(cudaEventDestroy(stop));
 	MY_FREE(a_host);
 	MY_FREE(b_host);
 	MY_FREE(c_host);
