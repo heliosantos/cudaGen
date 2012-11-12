@@ -1,9 +1,14 @@
-/** 
- *  @file dirutils.c
- *  @brief Funcoes utilitarias para diretorias e ficheiros
- *  @author 2120916@my.ipleiria.pt
- *  @author 
- *  @author 
+/**
+ * @file dirutils.c
+ * @brief A set of functions that help using the directories
+ * 
+ * @author 2120916@my.ipleiria.pt
+ * @author 2120912@my.ipleiria.pt
+ * @author 2120024@my.ipleiria.pt
+ *
+ * @date 07/11/2012
+ * @version 1 
+ * 
  */
 
 #include <stdio.h>
@@ -79,21 +84,7 @@ bool createDirectory(char *directory)
 	return FALSE;
 }
 
-char *getDateTime(void)
-{
-	time_t now;
-	struct tm *t;
-	char *str;
 
-	str = malloc(25);
-	memset(str, '\0', 25);
-	now = time(NULL);
-	t = localtime(&now);
-	strftime(str, 25, "%Y.%m.%d---%Hh%Mm%Ss", t);
-	// YYYY.MM.DD---HHhMM.SSs
-
-	return str;
-}
 
 /**
  * Function to prevent white spaces in directory name string

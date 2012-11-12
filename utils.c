@@ -1,14 +1,21 @@
 /**
-* @file: utils.cu
-* @author: *** insert name **
-* @created: *** 2012.11.11---16h11m16s ***
-* @comment 
-*/
+ * @file utils.c
+ * @brief A set of generic utility functions that didn't fit anywhere else
+ * 
+ * @author 2120916@my.ipleiria.pt
+ * @author 2120912@my.ipleiria.pt
+ * @author 2120024@my.ipleiria.pt
+ *
+ * @date 07/11/2012
+ * @version 1 
+ * 
+ */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "3rdParty/debug.h"
 #include "utils.h"
@@ -119,5 +126,22 @@ char *str_replace(const char *s, const char *old, const char *new)
 	*p = 0;
 	return cout;
 }
+
+char *getDateTime(void)
+{
+	time_t now;
+	struct tm *t;
+	char *str;
+
+	str = malloc(25);
+	memset(str, '\0', 25);
+	now = time(NULL);
+	t = localtime(&now);
+	strftime(str, 25, "%Y.%m.%d---%Hh%Mm%Ss", t);
+	// YYYY.MM.DD---HHhMM.SSs
+
+	return str;
+}
+
 
 

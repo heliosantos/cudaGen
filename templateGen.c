@@ -1,17 +1,13 @@
 /**
- * @file chambel.c
- * @brief Code file with functions created by chambel to cudaGen main program.
- *
- * Functions to handle -p, -r, -d and -F options
- *
- * @todo code review
+ * @file templateGen.c
+ * @brief A set of functions that help using the templates
  * 
+ * @author 2120916@my.ipleiria.pt
  * @author 2120912@my.ipleiria.pt
+ * @author 2120024@my.ipleiria.pt
+ *
  * @date 07/11/2012
  * @version 1 
- * @par Nothing done yet
- * 
- * Separated code by author
  * 
  */
 
@@ -24,7 +20,7 @@
 #include "3rdParty/debug.h"
 #include "utils.h"
 
-void fill_file_vars_hashtable(HASHTABLE_T * table, char *unparsedVars){
+void store_file_vars(HASHTABLE_T * table, char *unparsedVars){
 	char *split = NULL;
 	char *key = NULL;	
 	

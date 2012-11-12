@@ -1,10 +1,11 @@
 /**
  * @file main.c
- * @brief Ficheiro principal
+ *
+ * @brief The core file of cudaGen
  * @date 2012-10-28
  * @author 2120916@my.ipleiria.pt
- * @author cudagen@gmail.com
- * @author
+ * @author 2120912@my.ipleiria.pt
+ * @author 2120024@my.ipleiria.pt
  */
 
 #include <stdio.h>
@@ -51,32 +52,32 @@ int main(int argc, char **argv)
 {
 	struct gengetopt_args_info args_info;
 
-	char outputDir[PATH_MAX] = "";
-	char filename[PATH_MAX] = "";
-	char capitalFilename[PATH_MAX] = "";
-	char fullPath[PATH_MAX] = "";
-	char fileType[4] = "";
+	char outputDir[PATH_MAX] = ""; // the output directory where files are to be saved
+	char filename[PATH_MAX] = ""; // the name of the files (without extension) 
+	char capitalFilename[PATH_MAX] = ""; // the name of the files (without extension) in capital letters
+	char fullPath[PATH_MAX] = ""; // the full path of the file
+	char fileType[4] = ""; // the extension of the file
 
-	char mainTemplateName[PATH_MAX] = "";
-	char headerTemplateName[PATH_MAX] = "";
-	char makefileTemplateName[PATH_MAX] = "";
+	char mainTemplateName[PATH_MAX] = ""; // the path to the main template file (.c or .cu)
+	char headerTemplateName[PATH_MAX] = ""; // the path to the header template file (.h)
+	char makefileTemplateName[PATH_MAX] = ""; // the path to the makefile template file
 
-	char fileVarMainTemplateName[PATH_MAX] = "";
-	char fileVarHeaderTemplateName[PATH_MAX] = "";
-	char fileVarMakefileTemplateName[PATH_MAX] = "";
+	char fileVarMainTemplateName[PATH_MAX] = "";// the path to the main template variables file 
+	char fileVarHeaderTemplateName[PATH_MAX] = ""; // the path to the header template variables file
+	char fileVarMakefileTemplateName[PATH_MAX] = ""; // the path to the makefile template variables file
 	
 
-	HASHTABLE_T *systemVarsTable;
+	HASHTABLE_T *systemVarsTable; // an hashtable containing program genereted variables
 	HASHTABLE_T *fileVarsTable;
-	LISTA_GENERICA_T *varsIgnoreList;	
+	LISTA_GENERICA_T *varsIgnoreList; // an hashtable containing file fetched variables	
 	
-	char userName[PATH_MAX] = "your name";
-	char *fileVars = NULL;
+	char userName[PATH_MAX] = "your name"; // the name of the user
+	char *fileVars = NULL; // a string with the vars fetched from a variables file
 
 
-	char *template;
-	unsigned int i = 0;
-	char *currentDate = NULL;
+	char *template; // a string with the content of a template file
+	unsigned int i = 0; // a utility index
+	char *currentDate = NULL; // a string representing the current date
 	
 	// parse input parameters
 	if (cmdline_parser(argc, argv, &args_info) != 0)
@@ -105,9 +106,9 @@ int main(int argc, char **argv)
 	}
 	
 	// --blocks
-	fill_grid_dim(systemVarsTable, &args_info);
+	store_grid_geometry(systemVarsTable, &args_info);
 	// --threads
-	fill_block_dim(systemVarsTable, &args_info);
+	store_blocks_geometry(systemVarsTable, &args_info);
 	
 	// --dir
 	// get filename from path (the name of the last directory)
@@ -228,7 +229,7 @@ int main(int argc, char **argv)
 	fileVars = fileToString(fileVarMainTemplateName);
 	// creates an hastable containing the file vars 
 	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC) free);
-	fill_file_vars_hashtable(fileVarsTable, fileVars);
+	store_file_vars(fileVarsTable, fileVars);
 	free(fileVars);
 	// clear the vars to ignore
 	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
@@ -253,7 +254,7 @@ int main(int argc, char **argv)
 	fileVars = fileToString(fileVarHeaderTemplateName);
 	// creates an hastable containing the file vars 
 	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC) free);
-	fill_file_vars_hashtable(fileVarsTable, fileVars);
+	store_file_vars(fileVarsTable, fileVars);
 	free(fileVars);
 	// clear the vars to ignore
 	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
@@ -278,7 +279,7 @@ int main(int argc, char **argv)
 	fileVars = fileToString(fileVarMakefileTemplateName);
 	// creates an hastable containing the file vars 
 	fileVarsTable = tabela_criar(10, (LIBERTAR_FUNC) free);
-	fill_file_vars_hashtable(fileVarsTable, fileVars);
+	store_file_vars(fileVarsTable, fileVars);
 	free(fileVars);
 	// clear the vars to ignore
 	free_matched_vars_from_hashtable(fileVarsTable, varsIgnoreList);
@@ -302,7 +303,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void fill_grid_dim(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
+void store_grid_geometry(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
 {
 	char *x;
 	char *y;
@@ -356,7 +357,7 @@ void fill_grid_dim(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
 	tabela_inserir(table, "$!GRID_DIM!$", csvString);
 }
 
-void fill_block_dim(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
+void store_blocks_geometry(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
 {
 	char *x;
 	char *y;

@@ -1,16 +1,22 @@
 /**
-* @file chambel.h
-* @brief Header file with prototypes created by chambel to cudaGen main program.
-* @date 07-11-2012
-* @author 2120912@my.ipleiria.pt
-*/
+ * @file templateGen.h
+ * @brief A set of functions that help using the templates
+ * 
+ * @author 2120916@my.ipleiria.pt
+ * @author 2120912@my.ipleiria.pt
+ * @author 2120024@my.ipleiria.pt
+ *
+ * @date 07/11/2012
+ * @version 1 
+ * 
+ */
 
 #ifndef __TEMPLATEGEN_H
 #define __TEMPLATEGEN_H
 
 #include "3rdParty/hashtables.h"
 
-void fill_file_vars_hashtable(HASHTABLE_T *table, char *unparsedVars);
+void store_file_vars(HASHTABLE_T *table, char *unparsedVars);
 
 char *replace_string_with_hashtable_variables(char *template, HASHTABLE_T *table);
 
