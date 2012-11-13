@@ -1,3 +1,10 @@
+ /* template copied from:
+ * High Performance Computing / Computação de Alto Desempenho – Practical CUDA 
+ *	 Exercise sheet #2 – CUDA
+ *	 http://www.estg.ipleiria.pt
+ */
+
+
 #include <cuda.h>
 #include <stdio.h>
 #include "HandleError.h"

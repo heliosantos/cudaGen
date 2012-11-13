@@ -348,6 +348,14 @@ int main(int argc, char **argv)
 	return 0;
 }
 
+/**
+ * Stores the grid geometry in a hashtable
+ *
+ * @param table the hashtable to store the grid geometry
+ * @param args_info the structure that holds the bash input parameters
+ *
+ * @return void
+ */
 void store_grid_geometry(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
 {
 	char *x;
@@ -402,6 +410,14 @@ void store_grid_geometry(HASHTABLE_T * table, struct gengetopt_args_info *args_i
 	tabela_inserir(table, "$!GRID_DIM!$", csvString);
 }
 
+/**
+ * Stores the block geometry in a hashtable
+ *
+ * @param table the hashtable to store the blocks geometry
+ * @param args_info the structure that holds the bash input parameters
+ *
+ * @return void
+ */
 void store_blocks_geometry(HASHTABLE_T * table, struct gengetopt_args_info *args_info)
 {
 	char *x;

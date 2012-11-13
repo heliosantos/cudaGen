@@ -152,6 +152,11 @@ char *str_replace(const char *s, const char *old, const char *new)
 	return cout;
 }
 
+/**
+ * Returns a string representing the current date
+ *
+ * @return a string representing the current date
+ */
 char *getDateTime(void)
 {
 	time_t now;
