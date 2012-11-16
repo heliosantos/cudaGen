@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <pwd.h>
 
 #include "main.h"
@@ -257,7 +258,9 @@ int main(int argc, char **argv)
 	if (strcmp(fileType, ".cu") == 0) {
 		// reads from source file
 		strcpy(handleErrorTemplateName, homedir);
-		strcat(handleErrorTemplateName, CU_MAKEFILE_TEMPLATE_VARS);
+		strcat(handleErrorTemplateName, HANDLE_ERROR_H);
+		
+		
 		template = fileToString(handleErrorTemplateName);
 		// writes to destination file
 		snprintf(fullPath, PATH_MAX, "%s%s", outputDir,
